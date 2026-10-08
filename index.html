@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商战 · 现场指挥台</title>
+<meta name="description" content="七天商战活动指挥台：收益登记、审批、排名与结算。">
+<script>
+var THEME_KEY='shangzhan_theme_v1';
+try{document.documentElement.setAttribute('data-theme',localStorage.getItem(THEME_KEY)==='dark'?'dark':'light')}
+catch(e){document.documentElement.setAttribute('data-theme','light')}
+</script>
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230B111C'/><rect x='6' y='17' width='4.5' height='9' rx='1' fill='%23E3B24E'/><rect x='13.7' y='11' width='4.5' height='15' rx='1' fill='%23F2D488'/><rect x='21.4' y='6' width='4.5' height='20' rx='1' fill='%23E3B24E'/></svg>">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap">
+<style>
+/* ============ 设计基础 ============ */
+:root{
+  color-scheme:light;
+  --bg:#F4F6FA; --bg-2:#FFFFFF; --bg-3:#FFFFFF; --bg-4:#EEF2F7;
+  --line:#E1E7EF; --line-2:#C9D4E1;
+  --gold:#A47119; --gold-2:#8D6014; --gold-deep:#A47119;
+  --green:#147858; --red:#BB393C; --cyan:#167586; --blue:#326EB0;
+  --text:#19283B; --text-2:#53657D; --text-3:#697A90;
+  --accent-bg:#FFF6E4; --accent-line:#ECD7A8;
+  --green-bg:#EAF7F0; --green-line:#BDDCCD;
+  --red-bg:#FFF0F0; --red-line:#ECC9CB;
+  --cyan-bg:#EAF6F8; --cyan-line:#C1DDE3;
+  --blue-bg:#EDF3FC; --blue-line:#C9DAEE;
+  --topbar:rgba(255,255,255,.92); --hover:rgba(164,113,25,.045);
+  --radius:16px; --shadow:0 16px 44px rgba(30,48,75,.09);
+  --card-shadow:0 3px 14px rgba(30,48,75,.035); --sidebar-w:234px;
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0D1522; --bg-2:#111D2E; --bg-3:#162338; --bg-4:#1D2D44;
+  --line:#2B3B54; --line-2:#3A4D69;
+  --gold:#E6B860; --gold-2:#F1CD86; --gold-deep:#B58738;
+  --green:#59D5A5; --red:#FF9392; --cyan:#71CADA; --blue:#8FBAF4;
+  --text:#ECF2FA; --text-2:#B2C0D4; --text-3:#96A7BE;
+  --accent-bg:#30291D; --accent-line:#645132;
+  --green-bg:#17392F; --green-line:#306451;
+  --red-bg:#3B252B; --red-line:#71434A;
+  --cyan-bg:#16323D; --cyan-line:#2C5865;
+  --blue-bg:#1D304F; --blue-line:#3D577D;
+  --topbar:rgba(17,29,46,.92); --hover:rgba(241,205,134,.04);
+  --shadow:0 18px 48px rgba(0,0,0,.25); --card-shadow:0 3px 14px rgba(0,0,0,.09);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  background:var(--bg); color:var(--text); font-size:14px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+[hidden]{display:none!important}
+.num{font-variant-numeric:tabular-nums; letter-spacing:.2px}
+button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit}
+input,select,textarea{font-family:inherit; font-size:14px; color:var(--text)}
+a{color:inherit; text-decoration:none}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:6px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ============ 通用组件 ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:9px 16px;border-radius:9px;font-size:13.5px;font-weight:500;
+  border:1px solid var(--line);background:var(--bg-3);color:var(--text);
+  transition:.16s; white-space:nowrap; user-select:none}
+.btn:hover{border-color:var(--line-2); background:var(--bg-4)}
+.btn-primary{background:linear-gradient(180deg,#EFC468,#D9A23E);border-color:var(--gold-deep);
+  color:#241805;font-weight:700}
+.btn-primary:hover{background:linear-gradient(180deg,#F6D07E,#E3AF4C);border-color:var(--gold-deep)}
+.btn-danger{background:var(--red-bg);border-color:var(--red-line);color:var(--red)}
+.btn-danger:hover{background:var(--red-bg);border-color:var(--red)}
+.btn-ghost{background:transparent}
+.btn-sm{padding:6px 11px;font-size:12.5px;border-radius:7px}
+.btn-block{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.icon{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12.5px;color:var(--text-2);margin-bottom:6px;font-weight:500}
+.input,.select,textarea.input{width:100%;padding:9px 12px;border-radius:9px;
+  background:var(--bg);border:1px solid var(--line);color:var(--text);transition:.15s}
+.input:focus,.select:focus,textarea.input:focus{outline:none;border-color:var(--gold-deep);
+  box-shadow:0 0 0 3px rgba(227,178,78,.12)}
+.select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23A6B6D0' stroke-width='2.4'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat:no-repeat;background-position:right 11px center;padding-right:32px}
+.select option{background:var(--bg-3);color:var(--text)}
+textarea.input{resize:vertical;min-height:64px}
+.hint{font-size:12px;color:var(--text-3);margin-top:5px}
+
+.card{background:var(--bg-3);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px}
+.card-h h3{font-size:15px;font-weight:700}
+.grid{display:grid;gap:14px}
+
+.stat{background:var(--bg-3);border:1px solid var(--line);border-radius:var(--radius);padding:15px 17px;position:relative;overflow:hidden}
+.stat .k{font-size:12.5px;color:var(--text-2);margin-bottom:7px}
+.stat .v{font-size:25px;font-weight:900;line-height:1.15}
+.stat .sub{font-size:12px;color:var(--text-3);margin-top:5px}
+.stat.gold .v{color:var(--gold-2)} .stat.green .v{color:var(--green)} .stat.cyan .v{color:var(--cyan)}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;
+  font-size:11.5px;font-weight:500;border:1px solid var(--line);background:var(--bg-4);color:var(--text-2);white-space:nowrap}
+.badge.boss,.badge.pending{color:var(--gold-2);border-color:var(--accent-line);background:var(--accent-bg)}
+.badge.finance{color:var(--cyan);border-color:var(--cyan-line);background:var(--cyan-bg)}
+.badge.staff{color:var(--blue);border-color:var(--blue-line);background:var(--blue-bg)}
+.badge.approved{color:var(--green);border-color:var(--green-line);background:var(--green-bg)}
+.badge.rejected{color:var(--red);border-color:var(--red-line);background:var(--red-bg)}
+
+.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+table th,table td{padding:10px 13px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+table th{background:var(--bg-2);color:var(--text-2);font-weight:500;font-size:12px;position:sticky;top:0}
+table tr:last-child td{border-bottom:none}
+table tbody tr:hover{background:var(--hover)}
+td .num,th .num{font-weight:500}
+.pos{color:var(--green)} .neg{color:var(--red)}
+
+.empty{text-align:center;padding:44px 20px;color:var(--text-3)}
+.empty svg{width:42px;height:42px;stroke:var(--text-3);margin-bottom:12px;opacity:.6}
+.empty p{font-size:13px}
+
+/* ============ 模态框 / Toast ============ */
+.modal-mask{position:fixed;inset:0;background:rgba(4,8,15,.7);backdrop-filter:blur(3px);
+  z-index:80;display:flex;align-items:center;justify-content:center;padding:20px;animation:fade .18s}
+.modal{width:100%;max-width:440px;background:var(--bg-3);border:1px solid var(--line);
+  border-radius:14px;box-shadow:var(--shadow);animation:pop .2s;max-height:88vh;overflow-y:auto}
+.modal.lg{max-width:600px}
+.modal-h{padding:17px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.modal-h h3{font-size:15.5px;font-weight:700}
+.modal-b{padding:20px}
+.modal-f{padding:14px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px}
+.x-btn{color:var(--text-3);padding:4px;border-radius:6px}
+.x-btn:hover{color:var(--text);background:var(--bg-4)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes pop{from{opacity:0;transform:scale(.96) translateY(6px)}to{opacity:1;transform:none}}
+
+#toast-box{position:fixed;top:22px;left:50%;transform:translateX(-50%);z-index:120;
+  display:flex;flex-direction:column;gap:9px;align-items:center;pointer-events:none}
+.toast{background:var(--bg-4);border:1px solid var(--line);color:var(--text);
+  padding:10px 18px;border-radius:10px;font-size:13px;box-shadow:var(--shadow);
+  animation:toastIn .25s; display:flex;align-items:center;gap:9px}
+.toast.ok{border-color:var(--green-line)} .toast.ok .dot{background:var(--green)}
+.toast.err{border-color:var(--red-line)} .toast.err .dot{background:var(--red)}
+.toast .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);flex:none}
+@keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+
+/* ============ 应用框架 ============ */
+.shell{display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar-w);flex:none;background:var(--bg-2);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.sb-logo{padding:19px 18px 15px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
+.sb-logo .mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(145deg,#F0C668,#C8912F);
+  display:flex;align-items:center;justify-content:center;flex:none}
+.sb-logo .mark svg{width:19px;height:19px;stroke:#241805}
+.sb-logo b{font-size:15px;font-weight:900;letter-spacing:1px}
+.sb-logo small{display:block;font-size:10.5px;color:var(--text-3);letter-spacing:2px}
+.sb-role{margin:14px 14px 6px;padding:10px 12px;border-radius:9px;background:var(--bg-3);border:1px solid var(--line)}
+.sb-role .r-name{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+.sb-role .r-day{font-size:11.5px;color:var(--text-3);margin-top:2px}
+.sb-nav{flex:1;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+.sb-nav .grp{font-size:10.5px;color:var(--text-3);padding:12px 10px 5px;letter-spacing:1.5px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:8px;
+  color:var(--text-2);font-size:13.5px;transition:.13s;position:relative}
+.nav-item svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav-item:hover{background:var(--bg-3);color:var(--text)}
+.nav-item.active{background:var(--bg-4);color:var(--gold-2);font-weight:600}
+.nav-item.active::before{content:"";position:absolute;left:-10px;top:7px;bottom:7px;width:3px;
+  background:var(--gold);border-radius:3px}
+.nav-item .count{margin-left:auto;background:var(--red-bg);color:var(--red);border-radius:20px;
+  font-size:11px;padding:1px 8px;font-weight:600}
+.sb-foot{padding:10px;border-top:1px solid var(--line)}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{height:58px;border-bottom:1px solid var(--line);display:flex;align-items:center;
+  padding:0 28px;gap:14px;background:var(--topbar);backdrop-filter:blur(12px);
+  position:sticky;top:0;z-index:30}
+.topbar h1{font-size:16.5px;font-weight:700}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.day-pill{font-size:12.5px;color:var(--gold-2);border:1px solid var(--accent-line);background:var(--accent-bg);
+  padding:4px 12px;border-radius:20px;font-weight:600}
+.content{padding:24px;max-width:1280px;width:100%}
+.page-head{margin-bottom:18px}
+.page-head h2{font-size:19px;font-weight:800}
+.page-head p{font-size:13px;color:var(--text-2);margin-top:3px}
+.row-actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;align-items:center}
+.filter-bar .input,.filter-bar .select{width:auto;min-width:140px;padding:7px 10px;font-size:13px}
+
+/* ============ 首页：终端选择 ============ */
+.home{min-height:100vh;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.home::before{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(rgba(227,178,78,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(227,178,78,.045) 1px,transparent 1px);
+  background-size:44px 44px;
+  mask-image:radial-gradient(ellipse 80% 70% at 50% 35%,#000 30%,transparent 75%)}
+.home-inner{position:relative;margin:auto;width:100%;max-width:980px;padding:40px 24px;text-align:center}
+.home-kicker{font-size:12.5px;letter-spacing:5px;color:var(--gold);font-weight:500;margin-bottom:16px}
+.home h1{font-size:44px;font-weight:900;letter-spacing:6px;margin-bottom:14px}
+.home h1 span{color:var(--gold-2)}
+.home .desc{color:var(--text-2);font-size:14.5px;max-width:560px;margin:0 auto 40px}
+.term-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:left}
+.term-card{background:linear-gradient(180deg,var(--bg-3),var(--bg-2));border:1px solid var(--line);
+  border-radius:15px;padding:26px 22px;transition:.2s;display:block;position:relative;overflow:hidden}
+.term-card:hover{transform:translateY(-4px);border-color:var(--gold-deep);box-shadow:var(--shadow)}
+.term-card .t-icon{width:46px;height:46px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  background:var(--bg-4);border:1px solid var(--line);margin-bottom:16px}
+.term-card .t-icon svg{width:23px;height:23px;stroke:var(--gold-2);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.term-card h3{font-size:17px;font-weight:800;margin-bottom:7px}
+.term-card p{font-size:12.8px;color:var(--text-2);line-height:1.65}
+.term-card .go{position:absolute;top:22px;right:20px;color:var(--text-3);font-size:18px;transition:.2s}
+.term-card:hover .go{color:var(--gold);transform:translateX(3px)}
+.home-foot{position:relative;text-align:center;padding:22px;font-size:12px;color:var(--text-3)}
+
+/* ============ 收益登记 ============ */
+.entry-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start}
+.pick-search{margin-bottom:10px}
+.person-pick{max-height:470px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg-2)}
+.pick-grp{font-size:11.5px;color:var(--text-3);padding:8px 6px 5px;letter-spacing:1px;display:flex;justify-content:space-between}
+.pick-chip{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;
+  border:1px solid transparent;transition:.12s;margin-bottom:2px}
+.pick-chip:hover{background:var(--bg-3)}
+.pick-chip.sel{background:var(--accent-bg);border-color:var(--accent-line)}
+.pick-chip .p-name{font-size:13px;font-weight:500}
+.pick-chip .p-pos{margin-left:auto}
+.entry-recent{margin-top:14px}
+.recent-line{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+.recent-line:last-child{border-bottom:none}
+
+/* ============ 公司卡片 ============ */
+.co-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.co-card{display:flex;flex-direction:column}
+.co-head{display:flex;align-items:flex-start;gap:11px;margin-bottom:12px}
+.co-logo{width:38px;height:38px;border-radius:9px;background:var(--bg-4);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--gold-2);font-size:16px;flex:none}
+.co-name{font-size:15px;font-weight:700}
+.co-total{font-size:13px;color:var(--gold-2);font-weight:700}
+.member-line{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;border-top:1px dashed var(--line)}
+.member-line .m-earn{margin-left:auto;color:var(--green);font-size:12.5px}
+.co-foot{margin-top:12px;display:flex;gap:8px}
+
+/* ============ 排名条 ============ */
+.bar-row{display:flex;align-items:center;gap:11px;margin:10px 0}
+.bar-label{width:104px;flex:none;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{flex:1;height:10px;background:var(--bg);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.bar-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#B8862F,#F2D488);transition:width .6s ease}
+.bar-fill.c1{background:linear-gradient(90deg,#B8862F,#F6D987)}
+.bar-fill.c2{background:linear-gradient(90deg,#2E8C74,#4FE0B4)}
+.bar-fill.c3{background:linear-gradient(90deg,#356B9E,#79B6EE)}
+.bar-val{width:100px;flex:none;text-align:right;font-size:13px;font-weight:600}
+
+/* ============ 结算 ============ */
+.settle-rule{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:8px}
+.rule-box{background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:14px;text-align:center}
+.rule-box .r-pos{font-size:13px;font-weight:700;margin-bottom:9px}
+.rule-box .r-input{display:flex;align-items:center;justify-content:center;gap:6px}
+.rule-box .r-input input{width:70px;text-align:center}
+.alloc-line{display:flex;justify-content:space-between;align-items:center;padding:9px 2px;border-bottom:1px dashed var(--line);font-size:13px}
+.alloc-line .a-amt{font-weight:700;color:var(--gold-2)}
+.settle-banner{background:var(--accent-bg);border:1px solid var(--accent-line);
+  border-radius:10px;padding:13px 16px;font-size:13px;color:var(--gold-2);margin-bottom:16px;display:flex;gap:10px;align-items:center}
+
+/* ============ 口令锁 / 分段 ============ */
+.lock-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden}
+.lock-screen::before{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(rgba(227,178,78,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(227,178,78,.04) 1px,transparent 1px);
+  background-size:42px 42px;mask-image:radial-gradient(ellipse at 50% 40%,#000,transparent 75%)}
+.lock-card{width:348px;position:relative;background:var(--bg-3);border:1px solid var(--line);border-radius:15px;padding:30px 26px;text-align:center;box-shadow:var(--shadow)}
+.lock-card .l-icon{width:52px;height:52px;border-radius:13px;background:var(--bg-4);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.lock-card .l-icon svg{width:25px;height:25px;stroke:var(--gold-2);fill:none;stroke-width:1.7}
+.lock-card h2{font-size:18px;font-weight:800;margin-bottom:7px}
+.lock-card p{font-size:12.8px;color:var(--text-2);margin-bottom:20px}
+.tabs{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px;margin-bottom:16px}
+.tabs button{padding:7px 16px;border-radius:7px;font-size:13px;color:var(--text-2)}
+.tabs button.on{background:var(--bg-4);color:var(--gold-2);font-weight:600}
+
+/* ============ 大屏端 ============ */
+input[type=radio]{accent-color:var(--gold)}
+.screen{height:100vh;display:flex;flex-direction:column;padding:22px 38px 14px;overflow:hidden;position:relative}
+.scr-top{display:flex;align-items:center;gap:18px;border-bottom:1px solid var(--line);padding-bottom:15px}
+.scr-mark{width:46px;height:46px;border-radius:11px;background:linear-gradient(145deg,#F0C668,#C8912F);
+  display:flex;align-items:center;justify-content:center;flex:none}
+.scr-mark svg{width:25px;height:25px;stroke:#241805;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.scr-title{font-size:25px;font-weight:900;letter-spacing:4px}
+.scr-sub{font-size:12px;color:var(--text-3);letter-spacing:3px;margin-top:1px}
+.scr-top .right{margin-left:auto;display:flex;align-items:center;gap:16px}
+.scr-total{text-align:right}
+.scr-total .k{font-size:11.5px;color:var(--text-3)}
+.scr-total .v{font-size:23px;font-weight:900;color:var(--gold-2);line-height:1.2}
+.scr-clock{font-size:22px;font-weight:700;color:var(--text-2);min-width:96px;text-align:right}
+
+.scr-body{flex:1;min-height:0;margin:16px 0 10px;position:relative}
+.scr-panel{display:none;height:100%;flex-direction:column;animation:fade .35s}
+.scr-panel.on{display:flex}
+.scr-panel-h{font-size:17px;font-weight:800;letter-spacing:2px;color:var(--gold-2);margin-bottom:12px;
+  display:flex;align-items:center;gap:10px}
+.scr-panel-h::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+.scr-scroll{flex:1;min-height:0;overflow:hidden}
+
+.scr-co{display:grid;grid-template-columns:66px 1fr 130px;gap:24px;align-items:center;
+  padding:13px 4px;border-bottom:1px solid var(--line)}
+.scr-co .no{font-size:32px;font-weight:900;color:var(--text-3);font-style:italic}
+.scr-co.top .no{color:var(--gold)}
+.scr-co .cn{font-size:22px;font-weight:800;margin-bottom:7px;display:flex;align-items:center;gap:12px}
+.scr-co .cn .mem{font-size:12.5px;color:var(--text-3);font-weight:400}
+.scr-co .track{height:13px;background:var(--bg);border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.scr-co .fill{height:100%;border-radius:7px;background:linear-gradient(90deg,#B8862F,#F6D987)}
+.scr-co.top .fill{background:linear-gradient(90deg,#D9A23E,#FFE9B0)}
+.scr-co .cv{font-size:27px;font-weight:900;color:var(--gold-2);text-align:right}
+
+.scr-pers{display:grid;grid-template-columns:64px 1fr 1fr 150px;gap:18px;align-items:center;
+  padding:10px 4px;border-bottom:1px solid var(--line)}
+.scr-pers .no{font-size:24px;font-weight:900;color:var(--text-3)}
+.scr-pers:nth-child(-n+3) .no{color:var(--gold)}
+.scr-pers .pn{font-size:18px;font-weight:700}
+.scr-pers .pc{font-size:13.5px;color:var(--text-2)}
+.scr-pers .pv{font-size:22px;font-weight:900;color:var(--green);text-align:right}
+
+.scr-all{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;align-content:start}
+.scr-all .mini{background:var(--bg-3);border:1px solid var(--line);border-radius:11px;padding:13px 15px}
+.scr-all .mh{display:flex;justify-content:space-between;font-size:14.5px;font-weight:800;margin-bottom:8px}
+.scr-all .mh b{color:var(--gold-2)}
+.scr-all .ml{display:flex;justify-content:space-between;font-size:12.5px;padding:3.5px 0;color:var(--text-2)}
+.scr-all .ml .e{color:var(--green)}
+
+.scr-final{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;align-content:start;overflow-y:auto}
+.scr-final .fc{background:var(--bg-3);border:1px solid var(--accent-line);border-radius:11px;padding:13px 15px}
+.scr-final .fh{display:flex;justify-content:space-between;font-size:14.5px;font-weight:800;margin-bottom:7px}
+.scr-final .fh b{color:var(--gold-2)}
+.scr-final .fl{display:flex;justify-content:space-between;font-size:12.5px;padding:3.5px 0}
+.scr-final .fl .a{color:var(--gold-2);font-weight:700}
+
+.scr-dots{display:flex;gap:8px;justify-content:center;margin-bottom:9px}
+.scr-dots i{width:9px;height:9px;border-radius:5px;background:var(--line-2);cursor:pointer;transition:.2s}
+.scr-dots i.on{background:var(--gold);width:26px}
+.scr-foot{height:31px;overflow:hidden;border-top:1px solid var(--line);padding-top:8px;position:relative}
+.ticker{display:inline-flex;gap:46px;white-space:nowrap;animation:ticker 36s linear infinite;will-change:transform}
+.ticker span{font-size:13px;color:var(--text-2)}
+.ticker b{color:var(--green);font-weight:700}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.scr-f11{position:absolute;right:38px;bottom:46px;font-size:12px;color:var(--text-3);
+  background:var(--topbar);border:1px solid var(--line);padding:8px 14px;border-radius:9px;
+  animation:fade .4s;transition:opacity .5s}
+
+/* MORE_VIEW_CSS */
+/* ============ 双主题与界面优化 ============ */
+body{font-size:15px;line-height:1.65}
+.btn{min-height:42px;padding:10px 16px;border-radius:10px;font-size:14px}
+.btn-sm{min-height:34px;padding:6px 11px;font-size:13px}
+.btn-primary{box-shadow:0 3px 9px rgba(181,127,32,.12)}
+.btn:focus-visible,a:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.field label{font-size:14px;margin-bottom:8px}
+.input,.select,textarea.input{min-height:44px;font-size:15px;border-radius:10px}
+.hint{font-size:13px}
+.card,.stat{box-shadow:var(--card-shadow)}
+.card{padding:22px}
+.card-h{margin-bottom:18px}
+.card-h h3{font-size:16px}
+.stat{padding:20px}
+.stat .k{font-size:14px;margin-bottom:10px}
+.stat .v{font-size:29px;letter-spacing:-.6px}
+.stat .sub{font-size:13px;margin-top:8px}
+.stat.gold{border-top:3px solid var(--gold)}
+.stat.green{border-top:3px solid var(--green)}
+.badge{font-size:12px;padding:3px 10px}
+.sidebar{padding-top:6px}
+.sb-logo{padding:21px 18px}
+.sb-role{background:var(--bg-4);border-color:transparent;padding:12px}
+.sb-role .r-name{font-size:14px}
+.sb-role .r-day{font-size:12px}
+.sb-logo small,.sb-nav .grp{font-size:12px}
+.sb-nav{padding:12px}
+.nav-item{font-size:14px;padding:11px 12px;border-radius:10px}
+.nav-item.active{background:var(--accent-bg)}
+.nav-item.active::before{left:-12px;top:12px;bottom:12px}
+.sb-foot .nav-item{padding:9px 12px}
+.topbar{height:70px}
+.topbar h1{font-size:18px}
+.topbar .right .btn{min-height:36px;padding:7px 12px}
+.day-pill{font-size:13px;padding:6px 13px}
+.content{padding:28px;width:100%;margin:0 auto}
+.table-wrap{border-radius:12px}
+table{font-size:14px}
+table th{font-size:13px;background:var(--bg-4)}
+table th,table td{padding:12px 14px}
+.pick-grp{font-size:12px;font-weight:600;padding:12px 8px 8px}
+.pick-chip{padding:11px 12px;border-radius:10px}
+.pick-chip .p-name{font-size:14px}
+.person-pick{max-height:580px;padding:12px;border-radius:14px}
+.co-logo{width:44px;height:44px;background:var(--accent-bg);border-color:var(--accent-line)}
+.co-name{font-size:16px}.member-line{font-size:14px;padding:9px 0}
+.rule-box{padding:18px}.rule-box .r-pos{font-size:14px}
+.home{background:radial-gradient(ellipse at 50% 20%,var(--accent-bg),transparent 58%),var(--bg)}
+.home-tools{position:relative;z-index:1;display:flex;justify-content:flex-end;padding:24px 32px}
+.home-inner{max-width:1140px;padding:24px 32px 52px}
+.home h1{font-size:46px;letter-spacing:2px;font-weight:800}
+.home .desc{font-size:15px;max-width:650px;line-height:1.9;margin-bottom:38px}
+.home-kicker{font-size:12px;letter-spacing:3px}
+.term-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.term-card{border-radius:18px;padding:26px 22px;min-height:240px;box-shadow:var(--card-shadow)}
+.term-card .t-icon{width:48px;height:48px;border-radius:13px;background:var(--accent-bg);border-color:var(--accent-line)}
+.term-card h3{font-size:18px;margin-bottom:10px}
+.term-card p{font-size:14px;line-height:1.85}
+.term-card .go{display:none}
+.home-foot{font-size:13px;line-height:1.8;padding:20px 28px}
+.lock-card{border-radius:20px;padding:30px;box-shadow:var(--shadow)}
+.lock-card p{font-size:14px}
+.lock-screen>.corner-settings{position:absolute;right:24px;top:22px;z-index:2}
+.scr-tools{display:flex;align-items:center;gap:8px}
+.scr-tools .btn{min-height:34px}
+.settings-page{max-width:1180px}
+.settings-head{margin:2px 0 24px}
+.settings-head h2{font-size:26px;font-weight:800;letter-spacing:-.5px}
+.settings-head p{font-size:14px;color:var(--text-2);margin-top:6px}
+.settings-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:22px;align-items:start}
+.settings-stack{display:flex;flex-direction:column;gap:22px}
+.settings-card{padding:24px}
+.settings-heading{display:flex;gap:12px;align-items:center;margin-bottom:20px}
+.settings-icon{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;background:var(--accent-bg);color:var(--gold-2);flex:none}
+.settings-icon .icon{width:20px;height:20px}
+.settings-heading h3{font-size:17px;font-weight:700}
+.settings-heading p{font-size:13px;color:var(--text-2);margin-top:2px}
+.theme-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.theme-option{text-align:left;padding:12px;border-radius:14px;border:2px solid var(--line);background:var(--bg-3);transition:border-color .18s,box-shadow .18s}
+.theme-option:hover{border-color:var(--line-2)}
+.theme-option[aria-pressed="true"]{border-color:var(--gold);box-shadow:0 0 0 3px var(--accent-bg)}
+.theme-preview{--pv-bg:#F0F3F8;--pv-panel:#FFF;--pv-line:#DCE3EE;--pv-text:#C7D1DF;display:flex;height:108px;background:var(--pv-bg);border:1px solid var(--pv-line);border-radius:9px;overflow:hidden;padding:8px;gap:8px;pointer-events:none}
+.theme-preview.dark{--pv-bg:#101A2A;--pv-panel:#1D2D43;--pv-line:#35455F;--pv-text:#485D7A}
+.preview-side{width:28px;background:var(--pv-panel);border-radius:5px;padding:6px 4px}
+.preview-side i{display:block;height:4px;background:var(--pv-text);border-radius:3px;margin-bottom:8px}
+.preview-side i:first-child{height:9px;background:#D9AC56;margin-bottom:12px}
+.preview-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+.preview-top{height:10px;background:var(--pv-panel);border-radius:4px}
+.preview-stats{display:flex;gap:5px;height:25px}.preview-stats i{flex:1;background:var(--pv-panel);border-radius:4px;border-top:2px solid #D9AC56}
+.preview-table{flex:1;background:var(--pv-panel);border-radius:4px;padding:6px}
+.preview-table i{display:block;height:3px;margin:4px 0;background:var(--pv-text);border-radius:3px;width:80%}
+.theme-caption{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:14px;font-weight:600}
+.theme-mark{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1px solid var(--line-2);color:transparent}
+.theme-option[aria-pressed="true"] .theme-mark{background:var(--gold);color:var(--bg-3);border-color:var(--gold)}
+.theme-help{display:block;color:var(--text-2);font-size:12px;margin-top:4px;font-weight:400}
+.settings-note{font-size:13px;color:var(--text-2);display:flex;align-items:center;gap:7px;margin-top:17px}
+.settings-note .icon{color:var(--green)}
+.seven-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;margin:20px 0}
+.day-step{text-align:center;padding:10px 2px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text-3);font-size:12px}
+.day-step b{display:block;font-size:17px;font-weight:700;color:var(--text-2)}
+.day-step.past{background:var(--green-bg);border-color:var(--green-line);color:var(--green)}
+.day-step.past b{color:var(--green)}
+.day-step.current{background:var(--accent-bg);border-color:var(--accent-line);color:var(--gold-2);box-shadow:0 2px 6px var(--hover)}
+.day-step.current b{color:var(--gold-2)}
+.settings-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.settings-meta div{font-size:12px;color:var(--text-2)}
+.settings-meta b{display:block;font-size:20px;color:var(--text);margin-top:3px}
+.settings-meta small{font-size:13px;font-weight:400;margin-left:3px}
+.initialize-card{border-color:var(--red-line)}
+.initialize-card .settings-icon{background:var(--red-bg);color:var(--red)}
+.reset-details{padding:16px;background:var(--bg);border:1px solid var(--line);border-radius:12px;margin:16px 0 20px}
+.reset-details p{font-size:14px;color:var(--text-2);line-height:1.85}
+.reset-details .settings-meta{margin:12px 0;padding-top:12px;border-top:1px solid var(--line)}
+.settings-actions{display:flex;flex-direction:column;gap:10px}
+.settings-links{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+.settings-links a{font-size:13px;color:var(--text-2);text-decoration:underline;text-underline-offset:4px}
+@media(max-width:1100px){.term-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.term-card{min-height:210px}.settings-grid{gap:16px}.settings-card{padding:20px}}
+@media(max-width:850px){
+  :root{--sidebar-w:196px}.content{padding:20px}.topbar{padding:0 20px}
+  .settings-grid,.entry-grid{grid-template-columns:1fr}.settings-stack{gap:16px}
+  .grid[style*="repeat(4"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .grid[style*="1.3fr"]{grid-template-columns:1fr!important}
+  .scr-top{gap:10px}.scr-title{font-size:20px;letter-spacing:1px}.screen{padding:20px}
+  .scr-clock{display:none}
+}
+@media(max-width:620px){
+  .shell{display:block}.sidebar{width:100%;height:auto;position:relative;padding:0;border-right:0;border-bottom:1px solid var(--line)}
+  .sb-logo{padding:12px 16px}.sb-logo small,.sb-role,.sb-nav .grp{display:none}
+  .sb-nav{flex-direction:row;overflow-x:auto;gap:5px;padding:8px 12px}.sb-nav .nav-item{flex:none;font-size:13px;padding:8px 10px}
+  .sb-nav .nav-item.active::before{display:none}.sb-foot{padding:6px 12px;display:flex;gap:4px;flex-wrap:wrap}
+  .sb-foot .nav-item{font-size:13px;padding:6px 9px}.topbar{height:auto;min-height:62px;gap:8px;padding:12px 16px;flex-wrap:wrap}
+  .topbar h1{font-size:17px}.topbar .right{gap:6px}.topbar .right .btn{padding:6px 9px;font-size:13px}
+  .content{padding:16px}.grid[style*="repeat(3"],.grid[style*="repeat(2"]{grid-template-columns:1fr!important}
+  .co-grid{grid-template-columns:1fr}.card{padding:18px}.settings-card{padding:20px}
+  .settings-head{margin-bottom:18px}.settings-head h2{font-size:24px}
+  .settings-meta{gap:8px}.settings-meta b{font-size:19px}.theme-preview{height:92px}
+  .seven-days{gap:4px}.day-step{padding:8px 0;font-size:11px}.day-step b{font-size:16px}
+  .home-tools{padding:16px}.home-inner{padding:14px 20px 32px}.home h1{font-size:32px}.home .desc{font-size:14px;margin-bottom:26px}
+  .term-grid{grid-template-columns:1fr;gap:12px}.term-card{min-height:0;padding:20px}.term-card .t-icon{margin-bottom:12px}
+  .lock-card{padding:24px}.input,.select,textarea.input{font-size:16px}
+  .screen{height:auto;min-height:100vh;padding:16px}.scr-top{flex-wrap:wrap}.scr-top .right{width:100%;justify-content:space-between}
+  .scr-co{grid-template-columns:36px 1fr 88px;gap:10px}.scr-co .no{font-size:22px}.scr-co .cn{font-size:16px;flex-wrap:wrap;gap:4px}
+  .scr-co .cv{font-size:19px}.scr-pers{grid-template-columns:30px 1fr 92px;gap:8px}.scr-pers .pc{display:none}.scr-pers .pn{font-size:16px}.scr-pers .pv{font-size:18px}
+  .scr-all,.scr-final{grid-template-columns:1fr}.scr-f11{display:none}.scr-body{min-height:400px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast-box"></div>
+<div id="modal-root"></div>
+
+<script>
+/* ============================================================
+   核心：工具 / 存储 / 数据模型 / 汇总结算 / 通用交互 / 路由
+   ============================================================ */
+var STORE_KEY='shangzhan_v1';
+var state=null;
+
+/* ---------- 小工具 ---------- */
+function $(s,r){return (r||document).querySelector(s)}
+function $all(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+function uid(p){return p+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function money(n){var sign=n<0?'-':'';n=Math.abs(Math.round(n*100)/100);
+  var parts=n.toFixed(n%1?2:0).split('.');
+  return sign+'¥'+parts[0].replace(/\B(?=(\d{3})+(?!\d))/g,',')+(parts[1]?'.'+parts[1]:'')}
+function hm(ts){var d=new Date(ts);function z(x){return (x<10?'0':'')+x}
+  return z(d.getHours())+':'+z(d.getMinutes())}
+function dateText(ts){var d=new Date(ts);return (d.getMonth()+1)+'月'+d.getDate()+'日'}
+function POS_LABEL(p){return {boss:'老板',finance:'财务管理',staff:'员工'}[p]||p}
+function POS_BADGE(p){return '<span class="badge '+p+'">'+POS_LABEL(p)+'</span>'}
+function STATUS_LABEL(s){return {pending:'待审批',approved:'已生效',rejected:'已驳回'}[s]}
+
+/* ---------- 示例数据 ---------- */
+function seedData(){
+  var layout=[
+    {name:'盛远集团',members:[['陈志远','boss'],['林可','finance'],['赵一鸣','staff'],['王琪','staff'],['孙浩','staff']]},
+    {name:'锐锋资本',members:[['周锐','boss'],['吴静','finance'],['郑凯','staff'],['冯雪','staff'],['许朗','staff']]},
+    {name:'云帆商社',members:[['何帆','boss'],['马琳','finance'],['黄磊','staff'],['徐梦','staff'],['曹阳','staff'],['邓超','staff']]}
+  ];
+  var companies=[],persons=[],records=[],pid=1,rid=1,now=Date.now();
+  layout.forEach(function(c,ci){
+    var cid='c'+(ci+1);
+    companies.push({id:cid,name:c.name,note:'',createdAt:now});
+    c.members.forEach(function(m,mi){
+      var id='p'+(pid++);
+      persons.push({id:id,name:m[0],kind:'player',companyId:cid,position:m[1],active:true,createdAt:now});
+      for(var d=1;d<=3;d++){
+        var base=m[1]==='boss'?2600:(m[1]==='finance'?1800:1150);
+        var amt=Math.round((base+((pid*37+mi*53+d*71+ci*29)%950))/10)*10;
+        var st='approved';
+        if(d===3&&(mi===0||mi===2))st='pending';
+        if(d===2&&mi===4)st='rejected';
+        records.push({id:'r'+(rid++),personId:id,day:d,amount:amt,
+          category:m[1]==='boss'?'经营收入':'业务提成',note:'',
+          status:st,submitBy:'助教',submitAt:now-(3-d)*86400000-3600000,
+          reviewBy:st==='pending'?'':'主办方',reviewAt:st==='pending'?null:now-(3-d)*86400000,
+          rejectReason:st==='rejected'?'凭证信息不符':''});
+      }
+    });
+  });
+  return {meta:{activityName:'商战模拟',day:3,ownerPassword:'8888',settled:false,settledAt:null,createdAt:now},
+    rule:{boss:30,finance:20,staff:50,staffMode:'equal'},
+    companies:companies,persons:persons,records:records};
+}
+function defaultData(){
+  var d=seedData();
+  return d;
+}
+
+/* ---------- 存取 ---------- */
+function load(){
+  try{var raw=localStorage.getItem(STORE_KEY);if(raw)return JSON.parse(raw)}catch(e){}
+  return null;
+}
+function save(){localStorage.setItem(STORE_KEY,JSON.stringify(state))}
+function currentTheme(){return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light'}
+function setTheme(mode){
+  if(mode!=='light'&&mode!=='dark')return;
+  document.documentElement.setAttribute('data-theme',mode);
+  try{localStorage.setItem(THEME_KEY,mode)}catch(e){toast('已切换外观，当前浏览器无法保存偏好','err')}
+  if(typeof SettingsApp!=='undefined')SettingsApp.syncTheme();
+}
+function exportActivityBackup(){
+  var blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;
+  a.download='商战数据备份_第'+state.meta.day+'天_'+dateText(Date.now())+'.json';a.click();
+  setTimeout(function(){URL.revokeObjectURL(url)},1000);toast('当前活动备份已导出','ok');
+}
+function initStore(){
+  state=load();
+  if(!state){state=defaultData();save()}
+}
+
+/* ---------- 查询 ---------- */
+function getPerson(id){return state.persons.filter(function(p){return p.id===id})[0]}
+function getCompany(id){return state.companies.filter(function(c){return c.id===id})[0]}
+function membersOf(cid){return state.persons.filter(function(p){return p.kind==='player'&&p.companyId===cid&&p.active})}
+function unassigned(){return state.persons.filter(function(p){return p.kind==='player'&&!p.companyId&&p.active})}
+function approvedRecords(pid){
+  return state.records.filter(function(r){return r.status==='approved'&&(!pid||r.personId===pid)})
+}
+function personEarn(pid){
+  return approvedRecords(pid).reduce(function(a,r){return a+r.amount},0)
+}
+function companyEarn(cid){
+  return membersOf(cid).reduce(function(a,p){return a+personEarn(p.id)},0)
+}
+function dayEarn(day){
+  return state.records.filter(function(r){return r.status==='approved'&&r.day===day})
+    .reduce(function(a,r){return a+r.amount},0)
+}
+function pendingList(){return state.records.filter(function(r){return r.status==='pending'})}
+function totalEarn(){return approvedRecords().reduce(function(a,r){return a+r.amount},0)}
+
+/* ---------- 写操作 ---------- */
+function submitEarning(o){ // o:{personId,amount,category,note,by,direct}
+  var rec={id:uid('r'),personId:o.personId,day:state.meta.day,amount:o.amount,
+    category:o.category||'业务提成',note:o.note||'',
+    status:o.direct?'approved':'pending',submitBy:o.by||'助教',submitAt:Date.now(),
+    reviewBy:o.direct?(o.by||'主办方'):'',reviewAt:o.direct?Date.now():null,rejectReason:''};
+  state.records.unshift(rec);save();return rec
+}
+function reviewRecord(id,ok,reason){
+  var r=state.records.filter(function(x){return x.id===id})[0];if(!r)return;
+  r.status=ok?'approved':'rejected';
+  r.reviewBy='主办方';r.reviewAt=Date.now();r.rejectReason=ok?'':(reason||'未通过审批');
+  save();return r
+}
+function reviewAll(ok){
+  pendingList().forEach(function(r){reviewRecord(r.id,ok)});save()
+}
+function deleteRecord(id){
+  state.records=state.records.filter(function(r){return r.id!==id});save()
+}
+function addPerson(name){
+  var p={id:uid('p'),name:name,kind:'player',companyId:'',position:'staff',active:true,createdAt:Date.now()};
+  state.persons.push(p);save();return p
+}
+function updatePerson(id,patch){
+  var p=getPerson(id);if(p){Object.keys(patch).forEach(function(k){p[k]=patch[k]});save()}
+}
+function removePerson(id){
+  var p=getPerson(id);if(p)p.active=false;save()
+}
+function addCompany(name,note){
+  var c={id:uid('c'),name:name,note:note||'',createdAt:Date.now()};
+  state.companies.push(c);save();return c
+}
+function removeCompany(id){
+  state.companies=state.companies.filter(function(c){return c.id!==id});
+  state.persons.forEach(function(p){if(p.companyId===id)p.companyId=''});save()
+}
+function nextDay(){if(state.meta.day>=7){toast('活动已到第 7 天，不能再进入下一天','err');return false}state.meta.day++;save();return true}
+function setDay(n){state.meta.day=Math.max(1,n);save()}
+
+/* ---------- 结算算法 ----------
+   每公司：总收益按职位比例切三份；同职位多人平分；
+   员工份可选 平分 / 按个人收益加权；空缺职位份额在现有职位间归一化。 */
+function computeSettlement(){
+  var r=state.rule;
+  return state.companies.map(function(c){
+    var mems=membersOf(c.id);
+    var total=mems.reduce(function(a,p){return a+personEarn(p.id)},0);
+    var has={boss:mems.some(function(p){return p.position==='boss'}),
+      finance:mems.some(function(p){return p.position==='finance'}),
+      staff:mems.some(function(p){return p.position==='staff'})};
+    var raw={boss:has.boss?r.boss:0,finance:has.finance?r.finance:0,staff:has.staff?r.staff:0};
+    var ksum=raw.boss+raw.finance+raw.staff||1;
+    var pool={boss:total*raw.boss/ksum,finance:total*raw.finance/ksum,staff:total*raw.staff/ksum};
+    var rows=mems.map(function(p){
+      var peers=mems.filter(function(x){return x.position===p.position});
+      var amt=0;
+      if(p.position==='staff'&&r.staffMode==='weighted'){
+        var staffTotal=mems.filter(function(x){return x.position==='staff'})
+          .reduce(function(a,x){return a+personEarn(x.id)},0);
+        amt=staffTotal?pool.staff*personEarn(p.id)/staffTotal:0;
+      }else amt=pool[p.position]/peers.length;
+      return {personId:p.id,name:p.name,position:p.position,
+        earn:personEarn(p.id),amount:Math.round(amt*100)/100}
+    });
+    var sum=rows.reduce(function(a,x){return a+x.amount},0);
+    if(rows.length)rows[rows.length-1].amount+=Math.round((total-sum)*100)/100; // 尾差归最后一人
+    return {companyId:c.id,companyName:c.name,total:total,rows:rows}
+  });
+}
+
+/* ---------- Toast / Modal ---------- */
+function toast(msg,type){
+  var box=document.getElementById('toast-box');
+  var el=document.createElement('div');
+  el.className='toast '+(type||'');
+  el.innerHTML='<span class="dot"></span><span>'+esc(msg)+'</span>';
+  box.appendChild(el);
+  setTimeout(function(){el.style.opacity='0';el.style.transition='opacity .3s';
+    setTimeout(function(){el.remove()},320)},2200)
+}
+function openModal(opt){
+  closeModal();
+  var root=document.getElementById('modal-root');
+  root.innerHTML='<div class="modal-mask"><div class="modal'+(opt.wide?' lg':'')+'">'
+    +'<div class="modal-h"><h3>'+esc(opt.title)+'</h3>'
+    +'<button class="x-btn" data-close>'+iconSvg('x')+'</button></div>'
+    +'<div class="modal-b">'+opt.content+'</div>'
+    +(opt.footer?'<div class="modal-f">'+opt.footer+'</div>':'')+'</div></div>';
+  var mask=root.firstChild;
+  mask.addEventListener('click',function(e){if(e.target===mask||e.target.closest('[data-close]'))closeModal()});
+  if(opt.mount)opt.mount(mask);
+  return mask
+}
+function closeModal(){document.getElementById('modal-root').innerHTML=''}
+function iconSvg(name){
+  var p={
+    x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+    plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+    trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>'
+  };
+  return '<svg class="icon" viewBox="0 0 24 24">'+(p[name]||'')+'</svg>'
+}
+
+/* ---------- 路由调度 ---------- */
+function rerender(){render()}
+function render(){
+  var h=location.hash||'#/';
+  if(h.indexOf('#/screen')!==0&&typeof ScreenApp!=='undefined')ScreenApp.stopTimers();
+  if(h==='#/settings')return SettingsApp.render();
+  if(typeof SettingsApp!=='undefined')SettingsApp.returnTo=h;
+  if(h.indexOf('#/upload')===0)return UploadApp.render();
+  if(h.indexOf('#/ta')===0)return TaApp.render(h);
+  if(h.indexOf('#/organizer')===0)return OrgApp.render(h);
+  if(h.indexOf('#/screen')===0)return ScreenApp.render(h);
+  return HomeView()
+}
+window.addEventListener('hashchange',render);
+window.addEventListener('storage',function(e){
+  if(e.key===STORE_KEY){state=load();if(typeof afterSync==='function')afterSync()}
+  if(e.key===THEME_KEY){
+    document.documentElement.setAttribute('data-theme',e.newValue==='dark'?'dark':'light');
+    if(typeof SettingsApp!=='undefined')SettingsApp.syncTheme();
+  }
+});
+initStore();
+</script>
+<script>
+/* ============================================================
+   图标库 / 首页 / 助教端
+   ============================================================ */
+var ICONS={
+  dash:'<rect x="3" y="3" width="7.5" height="9" rx="1.2"/><rect x="13.5" y="3" width="7.5" height="5.5" rx="1.2"/><rect x="13.5" y="12.5" width="7.5" height="8.5" rx="1.2"/><rect x="3" y="16" width="7.5" height="5" rx="1.2"/>',
+  edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  inbox:'<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.5 5.5 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.5A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.5Z"/>',
+  people:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>',
+  building:'<rect x="4" y="2.5" width="16" height="19" rx="1.3"/><path d="M9 21.5v-4h6v4"/><path d="M8 6.5h.01M12 6.5h.01M16 6.5h.01M8 10.5h.01M12 10.5h.01M16 10.5h.01M8 14.5h.01M12 14.5h.01M16 14.5h.01"/>',
+  chart:'<line x1="3.5" y1="20.5" x2="21" y2="20.5"/><rect x="6.5" y="11" width="3.4" height="9.5"/><rect x="13.3" y="6" width="3.4" height="14.5"/>',
+  home:'<path d="M3 11l9-8 9 8"/><path d="M5 9.8V20h14V9.8"/>',
+  monitor:'<rect x="2" y="3" width="20" height="13.5" rx="2"/><line x1="8" y1="20.5" x2="16" y2="20.5"/><line x1="12" y1="16.5" x2="12" y2="20.5"/>',
+  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><polyline points="9 12 11 14 15 10"/>',
+  check:'<polyline points="20 6 9 17 4 12"/>',
+  next:'<polyline points="13 6 7 12 13 18"/><polyline points="19 6 13 12 19 18"/>',
+  search:'<circle cx="11" cy="11" r="7"/><line x1="20.5" y1="20.5" x2="16.7" y2="16.7"/>',
+  logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+  coin:'<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1.2 1.1-2 2.5-2s2.5.8 2.5 2-1 1.7-2.5 2-2.5.9-2.5 2.1 1.1 2 2.5 2 2.5-.8 2.5-2"/>'
+  ,cloud:'<path d="M7 18h10.5a4.5 4.5 0 0 0 .4-9A6 6 0 0 0 6.4 10 4 4 0 0 0 7 18Z"/><path d="M12 10v7M9.5 14.5 12 17l2.5-2.5"/>'
+  ,settings:'<path d="m9 3-1 3-3 1v3l2 2-2 2v3l3 1 1 3h6l1-3 3-1v-3l-2-2 2-2V7l-3-1-1-3Z"/><circle cx="12" cy="12" r="3"/>'
+  ,sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/>'
+  ,reset:'<path d="M3 11a9 9 0 1 1 2.5 7M3 4v7h7"/>'
+};
+function gic(n,cls){return '<svg class="icon '+(cls||'')+'" viewBox="0 0 24 24">'+(ICONS[n]||'')+'</svg>'}
+
+/* ---------- 首页 ---------- */
+function HomeView(){
+  $('#app').innerHTML=
+  '<div class="home"><div class="home-tools"><a class="btn" href="#/settings">'+gic('settings')+'设置</a></div><div class="home-inner">'
+  +'<div class="home-kicker">BUSINESS&nbsp;&nbsp;WAR&nbsp;&nbsp;GAME</div>'
+  +'<h1>商战<span> · </span>指挥台</h1>'
+  +'<p class="desc">面向现场商战活动的本地终端：登记每人每日收益、主办方审批生效、大屏实时公示排名，活动结束按职位比例结算。</p>'
+  +'<div class="term-grid">'
+  +'<a class="term-card" href="#/ta"><span class="go">›</span>'
+  +'<div class="t-icon">'+gic('edit')+'</div><h3>助教端</h3>'
+  +'<p>登记每人每天赚了多少钱，提交后由主办方审批；维护人员、公司与职位。</p></a>'
+  +'<a class="term-card" href="#/organizer"><span class="go">›</span>'
+  +'<div class="t-icon">'+gic('shield')+'</div><h3>主办方端</h3>'
+  +'<p>审批助教的登记、推进天数、最终按职位比例结算，并管理数据备份。</p></a>'
+  +'<a class="term-card" href="#/screen"><span class="go">›</span>'
+  +'<div class="t-icon">'+gic('monitor')+'</div><h3>大屏展示</h3>'
+  +'<p>全屏只读，公示公司与个人收益排名，数据更新后自动同步刷新。</p></a>'
+  +'<a class="term-card" href="#/upload"><span class="go">›</span>'
+  +'<div class="t-icon">'+gic('cloud')+'</div><h3>收益上传终端</h3>'
+  +'<p>供现场人员扫码或选择身份，上传今日收益和凭证，提交后等待主办方审核。</p></a>'
+  +'</div></div>'
+  +'<div class="home-foot">数据仅保存在本机浏览器 · 请用主办方端定期导出备份 · 大屏建议另开一个标签页并按 F11 全屏</div></div>';
+}
+
+/* ---------- 设置：外观偏好与活动初始化 ---------- */
+var SettingsApp={
+  returnTo:'#/',
+  preview:function(mode){
+    return '<span class="theme-preview '+mode+'" aria-hidden="true">'
+      +'<span class="preview-side"><i></i><i></i><i></i><i></i></span>'
+      +'<span class="preview-main"><span class="preview-top"></span><span class="preview-stats"><i></i><i></i><i></i></span>'
+      +'<span class="preview-table"><i></i><i></i><i></i><i></i></span></span></span>';
+  },
+  content:function(){
+    var self=this,players=state.persons.filter(function(p){return p.kind==='player'&&p.active}).length;
+    var theme=currentTheme();
+    var options=[{id:'light',name:'浅色模式',detail:'白色工作台，清晰明亮'},{id:'dark',name:'深色模式',detail:'深蓝工作台，适合投屏'}];
+    var daySteps=Array.from({length:7},function(_,i){var day=i+1;
+      return '<div class="day-step '+(day<state.meta.day?'past':day===state.meta.day?'current':'')+'"'+(day===state.meta.day?' aria-current="step"':'')+'><b>'+day+'</b>第 '+day+' 天</div>'}).join('');
+    return '<div class="settings-head"><h2>设置</h2><p>调整工作台外观，准备下一场商战活动。</p></div>'
+      +'<div class="settings-grid"><div class="settings-stack">'
+      +'<section class="card settings-card"><div class="settings-heading"><span class="settings-icon">'+gic('sun')+'</span><div><h3>界面外观</h3><p>选择你习惯的显示模式</p></div></div>'
+      +'<div class="theme-options" role="group" aria-label="界面主题">'+options.map(function(o){
+        return '<button type="button" class="theme-option" data-theme-choice="'+o.id+'" aria-pressed="'+(theme===o.id)+'">'+self.preview(o.id)
+          +'<span class="theme-caption"><span>'+o.name+'</span><span class="theme-mark">'+gic('check')+'</span></span><span class="theme-help">'+o.detail+'</span></button>'}).join('')+'</div>'
+      +'<div class="settings-note">'+gic('check')+'选择会自动保存，重新打开时继续使用。</div></section>'
+      +'<section class="card settings-card"><div class="settings-heading"><span class="settings-icon">'+gic('chart')+'</span><div><h3>'+esc(state.meta.activityName)+'</h3><p>活动周期 · 共 7 天</p></div><span class="day-pill" style="margin-left:auto">第 '+state.meta.day+' 天</span></div>'
+      +'<div class="seven-days" aria-label="七天活动进度">'+daySteps+'</div>'
+      +'<div class="settings-meta"><div>公司<b class="num">'+state.companies.length+'<small>家</small></b></div><div>学员<b class="num">'+players+'<small>人</small></b></div><div>待审批<b class="num">'+pendingList().length+'<small>笔</small></b></div></div>'
+      +'<div class="settings-links"><a href="#/organizer/data">备份恢复与主办方口令</a><a href="#/screen">查看排名大屏</a></div></section></div>'
+      +'<section class="card settings-card initialize-card"><div class="settings-heading"><span class="settings-icon">'+gic('reset')+'</span><div><h3>初始化活动</h3><p>从第 1 天开始一场全新的商战</p></div></div>'
+      +'<div class="reset-details"><p>初始化将清空当前活动的人员、公司、收益流水和结算结果。</p>'
+      +'<div class="settings-meta"><div>公司<b class="num">'+state.companies.length+'</b></div><div>人员<b class="num">'+state.persons.length+'</b></div><div>流水<b class="num">'+state.records.length+'</b></div></div>'
+      +'<p>保留主办方口令、分配规则和外观偏好。建议先导出当前数据。</p></div>'
+      +'<div class="settings-actions"><button type="button" class="btn" id="settings-backup">'+gic('shield')+'导出当前数据备份</button>'
+      +'<button type="button" class="btn btn-danger" id="settings-initialize">'+gic('reset')+'初始化，开始新活动</button></div>'
+      +'<div class="settings-links"><a href="#/settings" id="settings-demo">载入示例活动</a></div></section></div>';
+  },
+  render:function(){
+    $('#app').innerHTML='<div class="shell"><aside class="sidebar">'
+      +'<div class="sb-logo"><div class="mark">'+gic('chart')+'</div><div><b>商战指挥台</b><small>WAR ROOM</small></div></div>'
+      +'<div class="sb-role"><div class="r-name">'+gic('settings')+'工作台设置</div><div class="r-day">外观与活动管理</div></div>'
+      +'<nav class="sb-nav"><a class="nav-item" href="#/">'+gic('home')+'终端选择</a><a class="nav-item" href="#/ta">'+gic('edit')+'助教端</a>'
+      +'<a class="nav-item" href="#/organizer">'+gic('shield')+'主办方端</a><a class="nav-item" href="#/upload">'+gic('cloud')+'收益上传终端</a>'
+      +'<div class="grp">偏好设置</div><a class="nav-item active" href="#/settings">'+gic('settings')+'设置</a></nav>'
+      +'<div class="sb-foot"><a class="nav-item" href="'+esc(this.returnTo)+'">'+gic('logout')+'返回工作台</a></div></aside>'
+      +'<main class="main"><header class="topbar"><h1>工作台设置</h1><div class="right"><span class="badge">本机活动</span><span class="day-pill">第 '+state.meta.day+' / 7 天</span></div></header>'
+      +'<div class="content settings-page">'+this.content()+'</div></main></div>';
+    this.bind();
+  },
+  syncTheme:function(){
+    var theme=currentTheme();
+    $all('[data-theme-choice]').forEach(function(button){button.setAttribute('aria-pressed',String(button.getAttribute('data-theme-choice')===theme))});
+  },
+  bind:function(){
+    var self=this;
+    $all('[data-theme-choice]').forEach(function(button){button.onclick=function(){setTheme(button.getAttribute('data-theme-choice'))}});
+    $('#settings-backup').onclick=exportActivityBackup;
+    $('#settings-initialize').onclick=function(){self.confirmInitialization(false)};
+    $('#settings-demo').onclick=function(e){e.preventDefault();self.confirmInitialization(true)};
+  },
+  confirmInitialization:function(demo){
+    var unlocked=sessionStorage.getItem('org_unlocked')==='1';
+    openModal({title:demo?'载入示例活动':'初始化新活动',
+      content:'<div class="settle-banner">'+(demo?'示例数据将替换当前活动，用于体验登记、审批和结算。':'确认后清空人员、公司、全部流水与结算结果，活动回到第 1 天。')+'</div>'
+        +(!demo?'<div class="field"><label for="initialize-name">新活动名称</label><input class="input" id="initialize-name" maxlength="60" value="'+esc(state.meta.activityName)+'"></div>':'')
+        +(!unlocked?'<div class="field"><label for="initialize-password">主办方口令</label><input class="input" id="initialize-password" type="password" autocomplete="current-password" placeholder="请输入当前主办方口令"></div>':'')
+        +'<p class="hint">主办方口令、分配规则和深浅色偏好都会保留。取消不会改变任何活动数据。</p>',
+      footer:'<button class="btn" data-close>取消</button><button class="btn btn-danger" id="initialize-confirm">'+(demo?'确认载入示例':'确认初始化')+'</button>',
+      mount:function(modal){
+        $('#initialize-confirm',modal).onclick=function(){
+          if(!unlocked&&$('#initialize-password',modal).value!==state.meta.ownerPassword){toast('主办方口令不正确','err');return}
+          var name=demo?state.meta.activityName:$('#initialize-name',modal).value.trim();
+          if(!name){toast('请输入新活动名称','err');return}
+          var next=demo?seedData():{meta:Object.assign({},state.meta,{day:1,settled:false,settledAt:null,settlement:null,createdAt:Date.now()}),rule:Object.assign({},state.rule),companies:[],persons:[],records:[]};
+          next.meta.activityName=name;next.meta.ownerPassword=state.meta.ownerPassword;next.rule=Object.assign({},state.rule);
+          try{localStorage.setItem(STORE_KEY,JSON.stringify(next))}catch(e){toast('保存失败，当前活动数据未改变','err');return}
+          state=next;sessionStorage.setItem('org_unlocked','1');
+          TaApp.sel=null;TaApp.kw='';TaApp.viewDay=0;
+          closeModal();render();toast(demo?'示例活动已载入':'初始化完成，已进入第 1 天','ok');
+        };
+      }
+    });
+  }
+};
+
+/* ---------- 收益上传终端（单文件联网演示版） ---------- */
+var UploadApp={
+  render:function(){
+    var ps=state.persons.filter(function(p){return p.kind==='player'&&p.active});
+    $('#app').innerHTML='<div class="lock-screen"><a class="btn corner-settings" href="#/settings">'+gic('settings')+'设置</a><div class="lock-card" style="width:100%;max-width:560px;text-align:left">'
+      +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:18px"><div class="l-icon" style="margin:0">'+gic('cloud')+'</div><div><h2 style="margin:0">联网收益上传终端</h2><p style="margin:2px 0 0">终端 BW-01 · 已连接（演示）</p></div><span class="badge approved" style="margin-left:auto">● 在线</span></div>'
+      +'<div class="settle-banner" style="margin-bottom:18px">提交后会进入主办方审批，审核通过才计入个人及公司账户。</div>'
+      +'<div class="field"><label>上传人员</label><select class="select" id="up-person"><option value="">请选择学员或扫码识别</option>'
+      +ps.map(function(p){return '<option value="'+p.id+'">'+esc(p.name)+' · '+esc(p.companyId?(getCompany(p.companyId)||{}).name||'':'未分配公司')+'</option>'}).join('')+'</select></div>'
+      +'<div class="field"><label>第 '+state.meta.day+' 天收益金额</label><input class="input num" id="up-amount" type="number" min="0" step="10" placeholder="例如 1200"></div>'
+      +'<div class="field"><label>收益类型</label><select class="select" id="up-cat"><option>业务提成</option><option>经营收入</option><option>工资</option><option>奖金</option><option>投资收益</option><option>其他收入</option></select></div>'
+      +'<div class="field"><label>收益说明</label><textarea class="input" id="up-note" placeholder="填写订单、客户或任务说明"></textarea></div>'
+      +'<div class="field"><label>凭证照片（演示）</label><input class="input" id="up-file" type="file" accept="image/*"><div class="hint">当前文件会在本机演示，不会真正上传到服务器。</div></div>'
+      +'<button class="btn btn-primary btn-block" id="up-submit">'+gic('cloud')+'提交收益申报</button>'
+      +'<div style="display:flex;gap:9px;margin-top:10px"><a class="btn btn-block" href="#/">返回终端选择</a><a class="btn btn-block" href="#/organizer/approvals">查看审批中心</a></div>'
+      +'</div></div>';
+    $('#up-submit').onclick=function(){
+      var id=$('#up-person').value,amt=parseFloat($('#up-amount').value);
+      if(!id){toast('请选择上传人员','err');return} if(!(amt>0)){toast('请输入正确的收益金额','err');return}
+      submitEarning({personId:id,amount:amt,category:$('#up-cat').value,note:$('#up-note').value,by:'联网收益终端 BW-01',direct:false});
+      toast('已上传，等待主办方审批','ok');$('#up-amount').value='';$('#up-note').value='';$('#up-file').value='';
+    };
+  }
+};
+
+/* ---------- 助教端 ---------- */
+var TaApp={
+  sel:null, kw:'',
+  nav:[
+    {h:'#/ta',t:'概览',i:'dash'},
+    {h:'#/ta/entry',t:'收益登记',i:'edit'},
+    {h:'#/ta/requests',t:'我的申请',i:'inbox'},
+    {grp:'基础管理'},
+    {h:'#/ta/people',t:'人员管理',i:'people'},
+    {h:'#/ta/companies',t:'公司管理',i:'building'},
+    {h:'#/ta/view',t:'收益总表',i:'chart'},
+    {grp:'偏好设置'},
+    {h:'#/settings',t:'设置',i:'settings'}
+  ],
+  render:function(h){
+    var sub=h.replace(/\?.*$/,'');
+    var map={'#/ta':'dash','#/ta/entry':'entry','#/ta/requests':'requests',
+      '#/ta/people':'people','#/ta/companies':'companies','#/ta/view':'view'};
+    var key=map[sub]||'dash';
+    var navHtml=this.nav.map(function(n){
+      if(n.grp)return '<div class="grp">'+n.grp+'</div>';
+      return '<a class="nav-item" data-h="'+n.h+'" href="'+n.h+'">'+gic(n.i)+n.t
+        +(n.h==='#/ta/requests'&&pendingList().length?'<span class="count">'+pendingList().length+'</span>':'')+'</a>';
+    }).join('');
+    $('#app').innerHTML=
+    '<div class="shell"><aside class="sidebar">'
+    +'<div class="sb-logo"><div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/></svg></div>'
+    +'<div><b>商战指挥台</b><small>WAR&nbsp;ROOM</small></div></div>'
+    +'<div class="sb-role"><div class="r-name">'+gic('edit')+'助教终端</div>'
+    +'<div class="r-day num">'+esc(state.meta.activityName)+' · 第 '+state.meta.day+' 天</div></div>'
+    +'<nav class="sb-nav">'+navHtml+'</nav>'
+    +'<div class="sb-foot"><a class="nav-item" href="#/">'+gic('home')+'返回终端选择</a></div>'
+    +'</aside><main class="main">'
+    +'<header class="topbar"><h1>'+this.title(key)+'</h1><div class="right">'
+    +'<span class="day-pill num">第 '+state.meta.day+' / 7 天</span><a class="btn btn-ghost" href="#/settings" aria-label="打开设置">'+gic('settings')+'设置</a></div></header>'
+    +'<div class="content" id="ta-content">'+this.views[key]()+'</div>'
+    +'</main></div>';
+    $all('.nav-item[data-h]').forEach(function(a){if(a.getAttribute('data-h')===sub)a.classList.add('active')});
+    this.bind(key);
+  },
+  title:function(k){return {dash:'概览',entry:'收益登记',requests:'我的申请',people:'人员管理',companies:'公司管理',view:'收益总表'}[k]},
+  views:{
+    dash:function(){
+      var players=state.persons.filter(function(p){return p.kind==='player'&&p.active});
+      var pend=pendingList().length;
+      var ranked=state.companies.map(function(c){return {name:c.name,v:companyEarn(c.id)}})
+        .sort(function(a,b){return b.v-a.v});
+      var max=ranked[0]?ranked[0].v:1;
+      var colors=['c1','c2','c3'];
+      return '<div class="grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">'
+      +'<div class="stat"><div class="k">活动进行</div><div class="v num">第 '+state.meta.day+' 天</div><div class="sub">共 '+players.length+' 名学员 · '+state.companies.length+' 家公司</div></div>'
+      +'<div class="stat gold"><div class="k">已生效总收益</div><div class="v num">'+money(totalEarn())+'</div><div class="sub">所有公司账户合计</div></div>'
+      +'<div class="stat green"><div class="k">今日新增收益</div><div class="v num">'+money(dayEarn(state.meta.day))+'</div><div class="sub">第 '+state.meta.day+' 天已审批金额</div></div>'
+      +'</div>'
+      +'<div class="grid" style="grid-template-columns:1.3fr .9fr;align-items:start">'
+      +'<div class="card"><div class="card-h"><h3>公司资产排名</h3><a class="btn btn-sm" href="#/screen" target="_blank">打开大屏</a></div>'
+      +(ranked.length?ranked.map(function(r,i){
+          return '<div class="bar-row"><div class="bar-label">'+esc(r.name)+'</div>'
+          +'<div class="bar-track"><div class="bar-fill '+colors[i%3]+'" style="width:'+Math.max(2,r.v/max*100)+'%"></div></div>'
+          +'<div class="bar-val num">'+money(r.v)+'</div></div>';
+        }).join(''):'<div class="empty"><p>还没有公司</p></div>')+'</div>'
+      +'<div class="card"><div class="card-h"><h3>快捷操作</h3></div>'
+      +'<a class="btn btn-primary btn-block" style="margin-bottom:9px" href="#/ta/entry">'+gic('edit')+'登记今天的收益</a>'
+      +'<button class="btn btn-block" id="btn-next-day" style="margin-bottom:9px">'+gic('next')+'进入下一天</button>'
+      +(pend?'<div class="settle-banner">'+gic('inbox')+'当前有 <b class="num">&nbsp;'+pend+'&nbsp;</b> 笔登记等待主办方审批生效</div>'
+        :'<div class="hint">暂无待审批登记</div>')
+      +'</div></div>';
+    },
+    entry:function(){
+      return '<div class="entry-grid"><div>'
+      +'<div class="pick-search"><input class="input" id="pick-kw" placeholder="搜索学员姓名…" value="'+esc(TaApp.kw)+'"></div>'
+      +'<div class="person-pick" id="pick-box">'+TaApp.pickHtml()+'</div></div>'
+      +'<div><div class="card" id="entry-form">'+TaApp.formHtml()+'</div></div></div>';
+    }
+  },
+  pickHtml:function(){
+    var kw=this.kw.trim(),self=this;
+    function chip(p){
+      return '<div class="pick-chip'+(self.sel===p.id?' sel':'')+'" data-pick="'+p.id+'">'
+      +'<span class="p-name">'+esc(p.name)+'</span>'
+      +POS_BADGE(p.position)+'</div>';
+    }
+    var html='';
+    state.companies.forEach(function(c){
+      var ms=membersOf(c.id).filter(function(p){return !kw||p.name.indexOf(kw)>=0});
+      if(!ms.length)return '';
+      html+='<div class="pick-grp"><span>'+esc(c.name)+'</span><span class="num">'+money(companyEarn(c.id))+'</span></div>'+ms.map(chip).join('');
+    });
+    var ua=unassigned().filter(function(p){return !kw||p.name.indexOf(kw)>=0});
+    if(ua.length)html+='<div class="pick-grp"><span>未分配公司</span></div>'+ua.map(chip).join('');
+    if(!html)html='<div class="empty"><p>没有匹配的学员，请先到「人员管理」添加</p></div>';
+    return html;
+  },
+  formHtml:function(){
+    var p=this.sel?getPerson(this.sel):null;
+    if(!p)return '<div class="empty">'+gic('people')+'<p>请从左侧选择一名学员，<br>然后登记他今天的收益</p></div>';
+    var c=p.companyId?getCompany(p.companyId):null;
+    var recent=state.records.filter(function(r){return r.personId===p.id}).slice(0,4);
+    return '<div class="card-h"><div><h3>'+esc(p.name)+'</h3>'
+    +'<div style="margin-top:5px">'+POS_BADGE(p.position)
+    +' <span class="badge">'+esc(c?c.name:'未分配公司')+'</span></div></div>'
+    +'<div style="text-align:right"><div class="hint">累计已生效</div><b class="num pos" style="font-size:17px">'+money(personEarn(p.id))+'</b></div></div>'
+    +'<div class="field"><label>今天（第 '+state.meta.day+' 天）赚了多少</label>'
+    +'<input class="input num" id="in-amount" type="number" min="0" step="10" placeholder="例如 1200" autofocus></div>'
+    +'<div class="field"><label>收益类型</label><select class="select" id="in-cat">'
+    +['业务提成','经营收入','工资','奖金','投资收益','其他收入'].map(function(x){return '<option>'+x+'</option>'}).join('')
+    +'</select></div>'
+    +'<div class="field"><label>备注（可选）</label><textarea class="input" id="in-note" placeholder="例如：成交订单、凭证编号…"></textarea></div>'
+    +'<button class="btn btn-primary btn-block" id="btn-submit-earn">'+gic('check')+'提交登记（待主办方审批）</button>'
+    +(recent.length?'<div class="entry-recent"><div class="hint">最近记录</div>'
+      +recent.map(function(r){return '<div class="recent-line"><span class="num">第'+r.day+'天 · '+esc(r.category)+'</span>'
+      +'<span class="badge '+r.status+'">'+STATUS_LABEL(r.status)+'</span><b class="num" style="margin-left:8px">'+money(r.amount)+'</b></div>'}).join('')
+      +'</div>':'');
+  },
+  reqFilter:'pending', viewTab:'sum', viewCo:'', viewDay:0,
+  views2:{
+    requests:function(){
+      var f=TaApp.reqFilter;
+      var recs=state.records.filter(function(r){return r.submitBy==='助教'
+        &&(f==='all'||r.status===f)});
+      var tabs=[['pending','待审批'],['approved','已生效'],['rejected','已驳回'],['all','全部']];
+      return '<div class="tabs">'+tabs.map(function(t){
+        return '<button data-rf="'+t[0]+'" class="'+(f===t[0]?'on':'')+'">'+t[1]+'</button>'}).join('')+'</div>'
+      +'<div class="table-wrap"><table><colgroup><col style="width:13%"><col style="width:15%"><col style="width:9%"><col style="width:14%"><col style="width:13%"><col><col style="width:11%"></colgroup>'
+      +'<thead><tr><th>姓名</th><th>公司</th><th>天数</th><th>类型</th><th>金额</th><th>说明 / 驳回原因</th><th>状态</th></tr></thead><tbody>'
+      +(recs.length?recs.map(function(r){
+        var p=getPerson(r.personId),c=p&&p.companyId?getCompany(p.companyId):null;
+        return '<tr><td>'+esc(p?p.name:'?')+'</td><td>'+esc(c?c.name:'未分配')+'</td>'
+        +'<td class="num">第'+r.day+'天</td><td>'+esc(r.category)+'</td>'
+        +'<td class="num pos">'+money(r.amount)+'</td>'
+        +'<td style="white-space:normal;color:var(--text-3)">'+esc(r.status==='rejected'?r.rejectReason:r.note)+'</td>'
+        +'<td><span class="badge '+r.status+'">'+STATUS_LABEL(r.status)+'</span>'
+        +(r.status==='pending'?' <button class="btn btn-sm btn-ghost" data-recall="'+r.id+'">撤回</button>':'')+'</td></tr>';
+      }).join(''):'<tr><td colspan="7"><div class="empty"><p>没有相关登记申请</p></div></td></tr>')
+      +'</tbody></table></div>';
+    },
+    people:function(){
+      var ps=state.persons.filter(function(p){return p.kind==='player'&&p.active});
+      var coOpts='<option value="">未分配</option>'+state.companies.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>'}).join('');
+      return '<div class="filter-bar"><button class="btn btn-primary" id="btn-add-people">'+gic('people')+'添加学员</button>'
+      +'<span class="hint">共 '+ps.length+' 人 · 未分配公司 '+unassigned().length+' 人</span></div>'
+      +'<div class="table-wrap"><table><colgroup><col style="width:16%"><col style="width:22%"><col style="width:18%"><col style="width:16%"><col style="width:12%"></colgroup>'
+      +'<thead><tr><th>姓名</th><th>所属公司</th><th>职位</th><th>累计收益</th><th>操作</th></tr></thead><tbody>'
+      +(ps.length?ps.map(function(p){
+        return '<tr><td><b>'+esc(p.name)+'</b></td>'
+        +'<td><select class="select js-co" data-p="'+p.id+'">'+coOpts.replace('value="'+p.companyId+'"','value="'+p.companyId+'" selected')+'</select></td>'
+        +'<td><select class="select js-pos" data-p="'+p.id+'">'
+        +['boss','finance','staff'].map(function(x){return '<option value="'+x+'"'+(p.position===x?' selected':'')+'>'+POS_LABEL(x)+'</option>'}).join('')
+        +'</select></td>'
+        +'<td class="num pos">'+money(personEarn(p.id))+'</td>'
+        +'<td><button class="btn btn-sm btn-danger" data-rm-p="'+p.id+'">移除</button></td></tr>';
+      }).join(''):'<tr><td colspan="5"><div class="empty"><p>还没有学员，点击上方按钮添加</p></div></td></tr>')
+      +'</tbody></table></div>';
+    },
+    companies:function(){
+      return '<div class="filter-bar"><button class="btn btn-primary" id="btn-add-co">'+gic('building')+'创建公司</button>'
+      +'<span class="hint">共 '+state.companies.length+' 家公司</span></div>'
+      +'<div class="co-grid">'+state.companies.map(function(c){
+        var ms=membersOf(c.id);
+        return '<div class="card co-card"><div class="co-head"><div class="co-logo">'+esc(c.name.charAt(0))+'</div>'
+        +'<div style="flex:1"><div class="co-name">'+esc(c.name)+'</div>'
+        +'<div class="co-total num">'+money(companyEarn(c.id))+'</div></div></div>'
+        +ms.map(function(p){return '<div class="member-line">'+esc(p.name)+POS_BADGE(p.position)
+          +'<span class="m-earn num">'+money(personEarn(p.id))+'</span></div>'}).join('')
+        +(ms.length?'':'<div class="hint" style="padding:6px 0">暂无成员</div>')
+        +'<div class="co-foot"><button class="btn btn-sm btn-danger btn-block" data-rm-co="'+c.id+'">解散公司</button></div></div>';
+      }).join('')+'</div>';
+    },
+    view:function(){
+      var tabs=[['sum','汇总排名'],['detail','流水明细']];
+      var head='<div class="tabs">'+tabs.map(function(t){
+        return '<button data-vt="'+t[0]+'" class="'+(TaApp.viewTab===t[0]?'on':'')+'">'+t[1]+'</button>'}).join('')+'</div>';
+      var filter='<div class="filter-bar"><select class="select" id="f-co"><option value="">全部公司</option>'
+        +state.companies.map(function(c){return '<option value="'+c.id+'"'+(TaApp.viewCo===c.id?' selected':'')+'>'+esc(c.name)+'</option>'}).join('')
+        +'</select>'
+        +(TaApp.viewTab==='detail'?'<select class="select" id="f-day"><option value="0">全部天数</option>'
+          +Array.from({length:state.meta.day},function(_,i){return '<option value="'+(i+1)+'"'+(TaApp.viewDay===i+1?' selected':'')+'>第 '+(i+1)+' 天</option>'}).join('')
+          +'</select>':'')+'</div>';
+      var body='';
+      if(TaApp.viewTab==='sum'){
+        var ps=state.persons.filter(function(p){return p.kind==='player'&&p.active
+          &&(!TaApp.viewCo||p.companyId===TaApp.viewCo)})
+          .map(function(p){return {p:p,v:personEarn(p.id),t:state.records.filter(function(r){return r.status==='approved'&&r.personId===p.id&&r.day===state.meta.day}).reduce(function(a,r){return a+r.amount},0)}})
+          .sort(function(a,b){return b.v-a.v});
+        body='<div class="table-wrap"><table><colgroup><col style="width:8%"><col style="width:16%"><col style="width:16%"><col style="width:14%"><col style="width:14%"><col style="width:16%"></colgroup>'
+          +'<thead><tr><th>名次</th><th>姓名</th><th>公司</th><th>职位</th><th>今日</th><th>累计收益</th></tr></thead><tbody>'
+          +(ps.length?ps.map(function(x,i){var c=x.p.companyId?getCompany(x.p.companyId):null;
+            return '<tr><td class="num">'+(i+1)+'</td><td><b>'+esc(x.p.name)+'</b></td>'
+            +'<td>'+esc(c?c.name:'未分配')+'</td><td>'+POS_BADGE(x.p.position)+'</td>'
+            +'<td class="num pos">'+money(x.t)+'</td><td class="num pos" style="font-weight:700">'+money(x.v)+'</td></tr>'}).join('')
+            :'<tr><td colspan="6"><div class="empty"><p>暂无数据</p></div></td></tr>')+'</tbody></table></div>';
+      }else{
+        var rs=state.records.filter(function(r){return r.status==='approved'
+          &&(!TaApp.viewCo||(getPerson(r.personId)||{}).companyId===TaApp.viewCo)
+          &&(!TaApp.viewDay||r.day===TaApp.viewDay)})
+          .sort(function(a,b){return b.submitAt-a.submitAt});
+        body='<div class="table-wrap"><table><colgroup><col style="width:10%"><col style="width:14%"><col style="width:16%"><col style="width:14%"><col style="width:14%"><col></colgroup>'
+          +'<thead><tr><th>天数</th><th>姓名</th><th>公司</th><th>类型</th><th>金额</th><th>备注</th></tr></thead><tbody>'
+          +(rs.length?rs.map(function(r){var p=getPerson(r.personId),c=p&&p.companyId?getCompany(p.companyId):null;
+            return '<tr><td class="num">第'+r.day+'天</td><td>'+esc(p?p.name:'?')+'</td><td>'+esc(c?c.name:'未分配')+'</td>'
+            +'<td>'+esc(r.category)+'</td><td class="num pos">'+money(r.amount)+'</td>'
+            +'<td style="white-space:normal;color:var(--text-3)">'+esc(r.note)+'</td></tr>'}).join('')
+            :'<tr><td colspan="6"><div class="empty"><p>暂无流水</p></div></td></tr>')+'</tbody></table></div>';
+      }
+      return head+filter+body;
+    }
+  },
+  bind:function(key){
+    var c=$('#ta-content'),self=this;
+    if(key==='dash'){
+      var nb=$('#btn-next-day');
+      if(nb)nb.onclick=function(){
+        if(pendingList().length&&!confirm('还有登记未审批，确定进入第 '+(state.meta.day+1)+' 天吗？'))return;
+        if(nextDay()){toast('已进入第 '+state.meta.day+' 天','ok');rerender();}
+      };
+    }
+    if(key==='entry'){
+      $('#pick-kw').oninput=function(e){
+        self.kw=e.target.value;$('#pick-box').innerHTML=self.pickHtml();self.bindPick();
+      };
+      this.bindPick();
+      var btn=$('#btn-submit-earn');
+      if(btn)btn.onclick=function(){
+        var amt=parseFloat($('#in-amount').value);
+        if(!(amt>=0)){toast('请输入正确的金额','err');return}
+        if(!amt){toast('金额不能为 0','err');return}
+        submitEarning({personId:self.sel,amount:amt,category:$('#in-cat').value,
+          note:$('#in-note').value,by:'助教'});
+        toast('已提交，等待主办方审批','ok');
+        $('#entry-form').innerHTML=self.formHtml();
+      };
+    }
+    if(key==='requests'){
+      $all('[data-rf]',c).forEach(function(b){b.onclick=function(){
+        self.reqFilter=b.getAttribute('data-rf');c.innerHTML=self.views2.requests();self.bind('requests')}});
+      $all('[data-recall]',c).forEach(function(b){b.onclick=function(){
+        deleteRecord(b.getAttribute('data-recall'));toast('已撤回该登记');c.innerHTML=self.views2.requests();self.bind('requests')}});
+    }
+    if(key==='people'){
+      $('#btn-add-people').onclick=function(){
+        openModal({title:'添加学员',content:'<div class="field"><label>学员姓名（多人可用换行或逗号分隔）</label>'
+          +'<textarea class="input" id="m-names" placeholder="张三\n李四\n王五"></textarea></div>',
+          footer:'<button class="btn" data-close>取消</button><button class="btn btn-primary" id="m-ok">添加</button>',
+          mount:function(m){$('#m-ok',m).onclick=function(){
+            var names=$('#m-names',m).value.split(/[\n,，、]/).map(function(x){return x.trim()}).filter(Boolean);
+            if(!names.length){toast('请输入姓名','err');return}
+            names.forEach(addPerson);closeModal();toast('已添加 '+names.length+' 名学员','ok');
+            c.innerHTML=self.views2.people();self.bind('people')}}});
+      };
+      $all('.js-co',c).forEach(function(s){s.onchange=function(){
+        updatePerson(s.getAttribute('data-p'),{companyId:s.value})}});
+      $all('.js-pos',c).forEach(function(s){s.onchange=function(){
+        updatePerson(s.getAttribute('data-p'),{position:s.value})}});
+      $all('[data-rm-p]',c).forEach(function(b){b.onclick=function(){
+        var id=b.getAttribute('data-rm');
+        if(confirm('确定移除该学员？其历史记录仍保留。')){removePerson(id);toast('已移除');
+          c.innerHTML=self.views2.people();self.bind('people')}}});
+    }
+    if(key==='companies'){
+      $('#btn-add-co').onclick=function(){
+        openModal({title:'创建公司',content:'<div class="field"><label>公司名称</label>'
+          +'<input class="input" id="m-coname" placeholder="例如：盛远集团"></div>'
+          +'<div class="field"><label>备注（可选）</label><input class="input" id="m-conote"></div>',
+          footer:'<button class="btn" data-close>取消</button><button class="btn btn-primary" id="m-ok">创建</button>',
+          mount:function(m){$('#m-ok',m).onclick=function(){
+            var n=$('#m-coname',m).value.trim();
+            if(!n){toast('请输入公司名称','err');return}
+            addCompany(n,$('#m-conote',m).value);closeModal();toast('公司已创建','ok');
+            c.innerHTML=self.views2.companies();self.bind('companies')}}});
+      };
+      $all('[data-rm-co]',c).forEach(function(b){b.onclick=function(){
+        if(confirm('解散后成员将变为未分配，确定解散该公司？')){
+          removeCompany(b.getAttribute('data-rm-co'));toast('公司已解散');
+          c.innerHTML=self.views2.companies();self.bind('companies')}}});
+    }
+    if(key==='view'){
+      $all('[data-vt]',c).forEach(function(b){b.onclick=function(){
+        self.viewTab=b.getAttribute('data-vt');c.innerHTML=self.views2.view();self.bind('view')}});
+      var fc=$('#f-co');if(fc)fc.onchange=function(){self.viewCo=fc.value;
+        c.innerHTML=self.views2.view();self.bind('view')};
+      var fd=$('#f-day');if(fd)fd.onchange=function(){self.viewDay=parseInt(fd.value);
+        c.innerHTML=self.views2.view();self.bind('view')};
+    }
+  },
+  bindPick:function(){
+    var self=this;
+    $all('[data-pick]',$('#pick-box')).forEach(function(ch){ch.onclick=function(){
+      self.sel=ch.getAttribute('data-pick');
+      $('#pick-box').innerHTML=self.pickHtml();self.bindPick();
+      $('#entry-form').innerHTML=self.formHtml();
+      var b=$('#btn-submit-earn');
+      if(b)b.onclick=function(){
+        var amt=parseFloat($('#in-amount').value);
+        if(!(amt>0)){toast('请输入正确的金额','err');return}
+        submitEarning({personId:self.sel,amount:amt,category:$('#in-cat').value,
+          note:$('#in-note').value,by:'助教'});
+        toast('已提交，等待主办方审批','ok');
+        $('#entry-form').innerHTML=self.formHtml();
+      };
+    }});
+  }
+};
+// 助教端视图分发
+TaApp.views.requests=function(){return TaApp.views2.requests()};
+TaApp.views.people=function(){return TaApp.views2.people()};
+TaApp.views.companies=function(){return TaApp.views2.companies()};
+TaApp.views.view=function(){return TaApp.views2.view()};
+</script>
+<script>
+/* ============================================================
+   主办方端：口令锁 / 审批 / 直接登记 / 结算 / 数据管理
+   ============================================================ */
+var OrgApp={
+  nav:[
+    {h:'#/organizer',t:'概览',i:'dash'},
+    {h:'#/organizer/approvals',t:'审批中心',i:'check'},
+    {h:'#/organizer/entry',t:'直接登记',i:'edit'},
+    {grp:'基础管理'},
+    {h:'#/organizer/people',t:'人员管理',i:'people'},
+    {h:'#/organizer/companies',t:'公司管理',i:'building'},
+    {grp:'结算与数据'},
+    {h:'#/organizer/settle',t:'最终结算',i:'coin'},
+    {h:'#/organizer/data',t:'数据管理',i:'shield'},
+    {grp:'偏好设置'},
+    {h:'#/settings',t:'设置',i:'settings'}
+  ],
+  render:function(h){
+    if(sessionStorage.getItem('org_unlocked')!=='1')return this.lock();
+    var sub=h.replace(/\?.*$/,'');
+    var map={'#/organizer':'dash','#/organizer/approvals':'approvals','#/organizer/entry':'entry',
+      '#/organizer/people':'people','#/organizer/companies':'companies',
+      '#/organizer/settle':'settle','#/organizer/data':'data'};
+    var key=map[sub]||'dash';
+    var navHtml=this.nav.map(function(n){
+      if(n.grp)return '<div class="grp">'+n.grp+'</div>';
+      return '<a class="nav-item" href="'+n.h+'">'+gic(n.i)+n.t
+        +(n.h==='#/organizer/approvals'&&pendingList().length?'<span class="count">'+pendingList().length+'</span>':'')+'</a>';
+    }).join('');
+    $('#app').innerHTML=
+    '<div class="shell"><aside class="sidebar">'
+    +'<div class="sb-logo"><div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><polyline points="9 12 11 14 15 10"/></svg></div>'
+    +'<div><b>商战指挥台</b><small>ORGANIZER</small></div></div>'
+    +'<div class="sb-role"><div class="r-name">'+gic('shield')+'主办方终端</div>'
+    +'<div class="r-day num">'+esc(state.meta.activityName)+' · 第 '+state.meta.day+' 天</div></div>'
+    +'<nav class="sb-nav">'+navHtml+'</nav>'
+    +'<div class="sb-foot"><a class="nav-item" href="#/">'+gic('logout')+'退出并返回</a></div>'
+    +'</aside><main class="main">'
+    +'<header class="topbar"><h1>'+this.title(key)+'</h1><div class="right">'
+    +(state.meta.settled?'<span class="badge approved">已结算</span>':'')
+    +'<span class="day-pill num">第 '+state.meta.day+' / 7 天</span><a class="btn btn-ghost" href="#/settings" aria-label="打开设置">'+gic('settings')+'设置</a></div></header>'
+    +'<div class="content" id="org-content">'+this.views[key]()+'</div>'
+    +'</main></div>';
+    $all('.nav-item').forEach(function(a){if(a.getAttribute('href')===sub)a.classList.add('active')});
+    this.bind(key);
+  },
+  title:function(k){return {dash:'概览',approvals:'审批中心',entry:'直接登记',people:'人员管理',companies:'公司管理',settle:'最终结算',data:'数据管理'}[k]},
+  lock:function(){
+    $('#app').innerHTML='<div class="lock-screen"><a class="btn corner-settings" href="#/settings">'+gic('settings')+'设置</a><div class="lock-card">'
+    +'<div class="l-icon">'+gic('shield')+'</div><h2>主办方验证</h2>'
+    +'<p>请输入主办方口令，默认口令为 8888，可在数据管理中修改。</p>'
+    +'<div class="field"><input class="input num" id="lock-pw" type="password" placeholder="请输入口令" style="text-align:center"></div>'
+    +'<button class="btn btn-primary btn-block" id="lock-ok">进入主办方终端</button>'
+    +'<div style="margin-top:16px"><a href="#/" style="font-size:12.5px;color:var(--text-3)">返回终端选择</a></div>'
+    +'</div></div>';
+    var go=function(){
+      if($('#lock-pw').value===state.meta.ownerPassword){
+        sessionStorage.setItem('org_unlocked','1');OrgApp.render(location.hash||'#/organizer')
+      }else toast('口令不正确','err')
+    };
+    $('#lock-ok').onclick=go;
+    $('#lock-pw').onkeydown=function(e){if(e.key==='Enter')go()};
+  },
+  views:{
+    dash:function(){
+      var players=state.persons.filter(function(p){return p.kind==='player'&&p.active}).length;
+      var pend=pendingList().length;
+      return '<div class="grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">'
+      +'<div class="stat '+(pend?'gold':'green')+'"><div class="k">待审批登记</div><div class="v num">'+pend+'</div>'
+      +'<div class="sub">'+(pend?'需要主办方处理':'全部处理完毕')+'</div></div>'
+      +'<div class="stat gold"><div class="k">已生效总收益</div><div class="v num">'+money(totalEarn())+'</div></div>'
+      +'<div class="stat"><div class="k">公司 / 学员</div><div class="v num">'+state.companies.length+' / '+players+'</div></div>'
+      +'<div class="stat '+(state.meta.settled?'green':'')+'"><div class="k">结算状态</div>'
+      +'<div class="v" style="font-size:19px;padding-top:4px">'+(state.meta.settled?'已完成结算':'未结算')+'</div></div>'
+      +'</div><div class="grid" style="grid-template-columns:repeat(2,1fr)">'
+      +'<div class="card"><div class="card-h"><h3>资金审批</h3></div>'
+      +'<p style="font-size:13px;color:var(--text-2);margin-bottom:14px">助教提交的收益登记需在此审批通过后，才会计入个人与公司账户并展示到大屏。</p>'
+      +'<a class="btn btn-primary btn-block" href="#/organizer/approvals">'+gic('check')+'前往审批中心'+(pend?'（'+pend+' 笔待处理）':'')+'</a></div>'
+      +'<div class="card"><div class="card-h"><h3>活动推进</h3></div>'
+      +'<button class="btn btn-block" id="o-next" style="margin-bottom:9px">'+gic('next')+'进入下一天</button>'
+      +'<a class="btn btn-block '+(state.meta.settled?'':'btn-primary')+'" href="#/organizer/settle" style="margin-bottom:9px">'+gic('coin')+'最终结算</a>'
+      +'<a class="btn btn-block" href="#/screen" target="_blank">'+gic('monitor')+'打开公开展示大屏</a></div>'
+      +'</div>';
+    },
+    approvals:function(){
+      var pend=pendingList();
+      var done=state.records.filter(function(r){return r.status!=='pending'
+        &&r.reviewAt&&Date.now()-r.reviewAt<2*86400000}).slice(0,12);
+      var body=pend.length?'<div class="table-wrap"><table><colgroup><col style="width:12%"><col style="width:14%"><col style="width:9%"><col style="width:13%"><col style="width:13%"><col><col style="width:17%"></colgroup>'
+        +'<thead><tr><th>姓名</th><th>公司</th><th>天数</th><th>类型</th><th>金额</th><th>备注</th><th>操作</th></tr></thead><tbody>'
+        +pend.map(function(r){var p=getPerson(r.personId),c=p&&p.companyId?getCompany(p.companyId):null;
+          return '<tr><td><b>'+esc(p?p.name:'?')+'</b></td><td>'+esc(c?c.name:'未分配')+'</td>'
+          +'<td class="num">第'+r.day+'天</td><td>'+esc(r.category)+'</td>'
+          +'<td class="num pos" style="font-weight:700">'+money(r.amount)+'</td>'
+          +'<td style="white-space:normal;color:var(--text-3)">'+esc(r.note)+'</td>'
+          +'<td><button class="btn btn-sm btn-primary" data-ok="'+r.id+'">通过</button> '
+          +'<button class="btn btn-sm btn-danger" data-no="'+r.id+'">驳回</button></td></tr>'}).join('')
+        +'</tbody></table></div>'
+        :'<div class="card"><div class="empty">'+gic('check')+'<p>所有登记都已处理完毕</p></div></div>';
+      return '<div class="filter-bar">'+(pend.length?'<button class="btn btn-primary" id="ap-all">'+gic('check')+'全部通过（'+pend.length+' 笔）</button>':'')
+        +'<span class="hint">仅显示助教提交、尚未处理的登记</span></div>'+body
+        +(done.length?'<h3 style="font-size:14px;margin:20px 0 10px">最近处理</h3><div class="table-wrap"><table>'
+          +'<thead><tr><th>姓名</th><th>金额</th><th>处理结果</th><th>原因</th><th>时间</th></tr></thead><tbody>'
+          +done.map(function(r){var p=getPerson(r.personId);
+            return '<tr><td>'+esc(p?p.name:'?')+'</td><td class="num">'+money(r.amount)+'</td>'
+            +'<td><span class="badge '+r.status+'">'+STATUS_LABEL(r.status)+'</span></td>'
+            +'<td style="color:var(--text-3);white-space:normal">'+esc(r.rejectReason||'')+'</td>'
+            +'<td class="num">'+hm(r.reviewAt)+'</td></tr>'}).join('')+'</tbody></table></div>':'');
+    },
+    entry:function(){
+      var groups=state.companies.map(function(c){
+        var ms=membersOf(c);
+        return '<optgroup label="'+esc(c.name)+'">'+ms.map(function(p){
+          return '<option value="'+p.id+'">'+esc(p.name)+'（'+POS_LABEL(p.position)+'）</option>'}).join('')+'</optgroup>'
+      }).join('');
+      var ua=unassigned();
+      if(ua.length)groups+='<optgroup label="未分配">'+ua.map(function(p){return '<option value="'+p.id+'">'+esc(p.name)+'</option>'}).join('')+'</optgroup>';
+      return '<div class="card" style="max-width:580px"><div class="card-h"><h3>主办方直接登记</h3>'
+      +'<span class="hint">登记后立即生效，无需审批</span></div>'
+      +'<div class="field"><label>选择学员</label><select class="select" id="e-who">'+groups+'</select></div>'
+      +'<div class="field"><label>金额（第 '+state.meta.day+' 天）</label><input class="input num" id="e-amt" type="number" min="0" step="10"></div>'
+      +'<div class="field"><label>收益类型</label><select class="select" id="e-cat">'
+      +['业务提成','经营收入','工资','奖金','投资收益','其他收入'].map(function(x){return '<option>'+x+'</option>'}).join('')+'</select></div>'
+      +'<div class="field"><label>备注（可选）</label><input class="input" id="e-note"></div>'
+      +'<button class="btn btn-primary btn-block" id="e-ok">'+gic('check')+'登记并立即生效</button></div>';
+    }
+  },
+  ruleBox:function(label,pos,v){
+    return '<div class="rule-box"><div class="r-pos">'+label+'</div>'
+    +'<div class="r-input"><input class="input num rule-in" type="number" min="0" max="100" step="1" data-pos="'+pos+'" value="'+v+'"><span>%</span></div></div>';
+  },
+  views2:{
+    people:function(){return TaApp.views2.people()},
+    companies:function(){return TaApp.views2.companies()},
+    settle:function(){
+      if(state.meta.settled)return OrgApp.settledView();
+      var r=state.rule;
+      return '<div class="card" style="margin-bottom:16px"><div class="card-h"><h3>分配规则</h3>'
+      +'<span class="hint">三份份额合计需为 100%</span></div>'
+      +'<div class="settle-rule">'+OrgApp.ruleBox('老板','boss',r.boss)
+      +OrgApp.ruleBox('财务管理','finance',r.finance)+OrgApp.ruleBox('员工合计','staff',r.staff)+'</div>'
+      +'<div style="margin-top:14px"><label style="font-size:12.5px;color:var(--text-2);display:block;margin-bottom:7px">员工份额如何分到个人</label>'
+      +'<label style="display:block;margin:6px 0;font-size:13px"><input type="radio" name="sm" value="equal" '+(r.staffMode==='equal'?'checked':'')+'> 员工平均分配</label>'
+      +'<label style="display:block;margin:6px 0;font-size:13px"><input type="radio" name="sm" value="weighted" '+(r.staffMode==='weighted'?'checked':'')+'> 按个人累计收益加权分配</label></div></div>'
+      +'<div id="settle-preview">'+OrgApp.preview()+'</div>'
+      +'<div class="card" style="margin-top:16px"><button class="btn btn-primary btn-block" id="do-settle">'+gic('coin')+'确认最终结算并锁定</button>'
+      +'<div class="hint" style="margin-top:9px;text-align:center">结算后大屏展示最终分配；结算前可随时调整规则</div></div>';
+    },
+    data:function(){
+      return '<div class="grid" style="grid-template-columns:repeat(2,1fr)">'
+      +'<div class="card"><h3 style="margin-bottom:8px">导出备份</h3><p class="hint" style="margin-bottom:13px">将全部人员、公司、流水与规则导出为 JSON，便于换电脑或防止数据丢失。</p>'
+      +'<button class="btn btn-primary btn-block" id="d-export">导出 JSON 备份</button></div>'
+      +'<div class="card"><h3 style="margin-bottom:8px">导入恢复</h3><p class="hint" style="margin-bottom:13px">从备份 JSON 恢复，将覆盖当前全部数据。</p>'
+      +'<input type="file" id="d-file" accept=".json,application/json" class="input"></div>'
+      +'<div class="card"><h3 style="margin-bottom:8px">活动设置</h3><p class="hint" style="margin-bottom:13px">初始化活动、载入示例和深浅色切换已集中到设置页面。</p>'
+      +'<a class="btn btn-block" href="#/settings">'+gic('settings')+'前往设置</a></div>'
+      +'<div class="card"><h3 style="margin-bottom:8px">主办方口令</h3><p class="hint" style="margin-bottom:13px">进入主办方终端需要口令，当前为 '+esc(state.meta.ownerPassword)+'。</p>'
+      +'<div class="filter-bar"><input class="input" id="d-pw" placeholder="输入新口令"><button class="btn btn-primary" id="d-pwok">保存</button></div></div>'
+      +'</div>';
+    }
+  },
+  preview:function(){
+    var r=state.rule,sum=Math.round((r.boss+r.finance+r.staff)*100)/100;
+    var warn=sum!==100?'<div class="settle-banner">当前份额合计为 '+sum+'%，需调整为 100% 才能结算</div>':'';
+    return warn+computeSettlement().map(function(d){
+      return '<div class="card" style="margin-bottom:14px"><div class="card-h"><h3>'+esc(d.companyName)+'</h3>'
+      +'<b class="num" style="color:var(--gold-2)">'+money(d.total)+'</b></div>'
+      +'<div class="table-wrap"><table><colgroup><col style="width:18%"><col style="width:16%"><col style="width:32%"><col style="width:34%"></colgroup>'
+      +'<thead><tr><th>姓名</th><th>职位</th><th>个人累计业绩</th><th>最终分配</th></tr></thead><tbody>'
+      +(d.rows.length?d.rows.map(function(x){return '<tr><td>'+esc(x.name)+'</td><td>'+POS_BADGE(x.position)+'</td>'
+        +'<td class="num pos">'+money(x.earn)+'</td><td class="num" style="color:var(--gold-2);font-weight:700">'+money(x.amount)+'</td></tr>'}).join('')
+        :'<tr><td colspan="4"><div class="empty"><p>公司暂无成员</p></div></td></tr>')
+      +'</tbody></table></div></div>';
+    }).join('');
+  },
+  settledView:function(){
+    var data=state.meta.settlement||[];
+    return '<div class="settle-banner">'+gic('coin')+'活动已于 '+dateText(state.meta.settledAt)+' 完成最终结算，以下为各公司分配结果</div>'
+    +data.map(function(d){
+      return '<div class="card" style="margin-bottom:14px"><div class="card-h"><h3>'+esc(d.companyName)+'</h3>'
+      +'<b class="num" style="color:var(--gold-2)">'+money(d.total)+'</b></div>'
+      +'<div class="table-wrap"><table><colgroup><col style="width:18%"><col style="width:16%"><col style="width:32%"><col style="width:34%"></colgroup>'
+      +'<thead><tr><th>姓名</th><th>职位</th><th>个人累计业绩</th><th>最终分配</th></tr></thead><tbody>'
+      +d.rows.map(function(x){return '<tr><td>'+esc(x.name)+'</td><td>'+POS_BADGE(x.position)+'</td>'
+        +'<td class="num pos">'+money(x.earn)+'</td><td class="num" style="color:var(--gold-2);font-weight:700">'+money(x.amount)+'</td></tr>'}).join('')
+      +'</tbody></table></div></div>';
+    }).join('')+'<div class="card"><button class="btn btn-block" id="undo-settle">撤销结算，返回调整</button></div>';
+  },
+  refresh:function(key){
+    $('#org-content').innerHTML=this.views[key]();this.bind(key)
+  },
+  bind:function(key){
+    var c=$('#org-content'),self=this;
+    if(key==='dash'){
+      var nb=$('#o-next');
+      nb.onclick=function(){
+        if(pendingList().length&&!confirm('还有登记未审批，确定进入下一天吗？'))return;
+        if(nextDay()){toast('已进入第 '+state.meta.day+' 天','ok');rerender()}};
+    }
+    if(key==='approvals'){
+      $all('[data-ok]',c).forEach(function(b){b.onclick=function(){
+        reviewRecord(b.getAttribute('data-ok'),true);toast('已通过，收益生效','ok');self.refresh('approvals')}});
+      $all('[data-no]',c).forEach(function(b){b.onclick=function(){
+        var id=b.getAttribute('data-no');
+        openModal({title:'驳回登记',content:'<div class="field"><label>驳回原因（将展示给助教）</label>'
+          +'<input class="input" id="m-reason" placeholder="例如：凭证不符、金额有误"></div>',
+          footer:'<button class="btn" data-close>取消</button><button class="btn btn-danger" id="m-rj">确认驳回</button>',
+          mount:function(m){$('#m-rj',m).onclick=function(){
+            reviewRecord(id,false,$('#m-reason',m).value);closeModal();
+            toast('已驳回');self.refresh('approvals')}}});
+      }});
+      var aa=$('#ap-all');
+      if(aa)aa.onclick=function(){
+        if(confirm('确定全部通过？')){reviewAll(true);toast('已全部通过','ok');self.refresh('approvals')}};
+    }
+    if(key==='entry'){
+      $('#e-ok').onclick=function(){
+        var id=$('#e-who').value,amt=parseFloat($('#e-amt').value);
+        if(!id){toast('请先添加学员','err');return}
+        if(!(amt>0)){toast('请输入正确金额','err');return}
+        submitEarning({personId:id,amount:amt,category:$('#e-cat').value,
+          note:$('#e-note').value,by:'主办方',direct:true});
+        toast('已登记并立即生效','ok');$('#e-amt').value='';$('#e-note').value='';
+      };
+    }
+    if(key==='people'){
+      $('#btn-add-people').onclick=function(){
+        openModal({title:'添加学员',content:'<div class="field"><label>学员姓名（多人可用换行或逗号分隔）</label>'
+          +'<textarea class="input" id="m-names"></textarea></div>',
+          footer:'<button class="btn" data-close>取消</button><button class="btn btn-primary" id="m-ok">添加</button>',
+          mount:function(m){$('#m-ok',m).onclick=function(){
+            var names=$('#m-names',m).value.split(/[\n,，、]/).map(function(x){return x.trim()}).filter(Boolean);
+            if(!names.length){toast('请输入姓名','err');return}
+            names.forEach(addPerson);closeModal();toast('已添加 '+names.length+' 名学员','ok');self.refresh('people')}}});
+      };
+      $all('.js-co',c).forEach(function(s){s.onchange=function(){
+        updatePerson(s.getAttribute('data-p'),{companyId:s.value})}});
+      $all('.js-pos',c).forEach(function(s){s.onchange=function(){
+        updatePerson(s.getAttribute('data-p'),{position:s.value})}});
+      $all('[data-rm-p]',c).forEach(function(b){b.onclick=function(){
+        if(confirm('确定移除该学员？历史记录仍保留。')){removePerson(b.getAttribute('data-rm'));
+          toast('已移除');self.refresh('people')}}});
+    }
+    if(key==='companies'){
+      $('#btn-add-co').onclick=function(){
+        openModal({title:'创建公司',content:'<div class="field"><label>公司名称</label><input class="input" id="m-coname"></div>'
+          +'<div class="field"><label>备注（可选）</label><input class="input" id="m-conote"></div>',
+          footer:'<button class="btn" data-close>取消</button><button class="btn btn-primary" id="m-ok">创建</button>',
+          mount:function(m){$('#m-ok',m).onclick=function(){
+            var n=$('#m-coname',m).value.trim();
+            if(!n){toast('请输入公司名称','err');return}
+            addCompany(n,$('#m-conote',m).value);closeModal();toast('公司已创建','ok');self.refresh('companies')}}});
+      };
+      $all('[data-rm-co]',c).forEach(function(b){b.onclick=function(){
+        if(confirm('解散后成员变为未分配，确定解散？')){removeCompany(b.getAttribute('data-rm-co'));
+          toast('公司已解散');self.refresh('companies')}}});
+    }
+    if(key==='settle'){
+      $all('.rule-in',c).forEach(function(inp){inp.oninput=function(){
+        state.rule[inp.getAttribute('data-pos')]=parseFloat(inp.value)||0;save();
+        $('#settle-preview').innerHTML=self.preview()}});
+      $all('input[name=sm]',c).forEach(function(r){r.onchange=function(){
+        state.rule.staffMode=r.value;save();$('#settle-preview').innerHTML=self.preview()}});
+      var ds=$('#do-settle');
+      if(ds)ds.onclick=function(){
+        var r=state.rule;
+        if(r.boss+r.finance+r.staff!==100){toast('份额合计需为 100%','err');return}
+        if(!totalEarn()){toast('还没有任何已生效收益','err');return}
+        if(!confirm('确认最终结算？结算结果将锁定并可展示到大屏。'))return;
+        state.meta.settled=true;state.meta.settledAt=Date.now();
+        state.meta.settlement=computeSettlement();save();
+        toast('结算完成','ok');self.refresh('settle')};
+      var us=$('#undo-settle');
+      if(us)us.onclick=function(){
+        if(confirm('撤销结算后可重新调整规则，确定？')){
+          state.meta.settled=false;state.meta.settledAt=null;state.meta.settlement=null;save();
+          self.refresh('settle')}};
+    }
+    if(key==='data'){
+      $('#d-export').onclick=exportActivityBackup;
+      $('#d-file').onchange=function(e){
+        var f=e.target.files[0];if(!f)return;
+        var rd=new FileReader();
+        rd.onload=function(){
+          try{var d=JSON.parse(rd.result);
+            if(!d.meta||!d.persons||!d.companies)throw 0;
+            if(confirm('导入将覆盖当前全部数据，确定？')){state=d;save();toast('数据已导入','ok');rerender()}}
+          catch(x){toast('文件格式不正确','err')}
+        };rd.readAsText(f)};
+      $('#d-pwok').onclick=function(){
+        var v=$('#d-pw').value.trim();
+        if(!v){toast('请输入新口令','err');return}
+        state.meta.ownerPassword=v;save();toast('口令已更新','ok');$('#d-pw').value=''};
+    }
+  }
+};
+OrgApp.views.people=function(){return OrgApp.views2.people()};
+OrgApp.views.companies=function(){return OrgApp.views2.companies()};
+OrgApp.views.settle=function(){return OrgApp.views2.settle()};
+OrgApp.views.data=function(){return OrgApp.views2.data()};
+</script>
+<script>
+/* ============================================================
+   大屏端：轮播展示 / 自动同步 / 时钟
+   ============================================================ */
+var ScreenApp={
+  tab:0, panels:[], autoTimer:null, clockTimer:null, syncTimer:null, holdUntil:0, sig:'',
+  render:function(keep){
+    var self=this;
+    this.panels=[
+      {t:'公司资产排名',h:this.coPanel()},
+      {t:'个人收益榜 TOP 12',h:this.persPanel()},
+      {t:'全员收益一览',h:this.allPanel()}
+    ];
+    if(state.meta.settled)this.panels.push({t:'最终分配结果',h:this.finalPanel()});
+    if(!keep)this.tab=0;
+    if(this.tab>=this.panels.length)this.tab=0;
+    $('#app').innerHTML=
+    '<div class="screen"><div class="scr-top">'
+    +'<div class="scr-mark"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/></svg></div>'
+    +'<div><div class="scr-title">'+esc(state.meta.activityName)+' · 收益榜</div>'
+    +'<div class="scr-sub">BUSINESS WAR · LIVE · 第 '+state.meta.day+' 天</div></div>'
+    +'<div class="right"><div class="scr-total"><div class="k">全部公司账户合计</div>'
+    +'<div class="v num">'+money(totalEarn())+'</div></div>'
+    +'<div class="scr-clock num" id="scr-clock">--:--</div><div class="scr-tools"><a class="btn btn-sm" href="#/settings">'+gic('settings')+'设置</a></div></div></div>'
+    +'<div class="scr-body">'+this.panels.map(function(p,i){
+      return '<div class="scr-panel'+(i===self.tab?' on':'')+'"><div class="scr-panel-h">'+p.t+'</div>'
+      +'<div class="scr-scroll">'+p.h+'</div></div>'}).join('')+'</div>'
+    +'<div class="scr-dots">'+this.panels.map(function(p,i){
+      return '<i data-dot="'+i+'"'+(i===self.tab?' class="on"':'')+'></i>'}).join('')+'</div>'
+    +'<div class="scr-foot">'+this.ticker()+'</div>'
+    +'<div class="scr-f11" id="f11tip">按 F11 进入全屏投屏 · ← / → 键切换页面</div></div>';
+    $all('[data-dot]').forEach(function(d){d.onclick=function(){
+      self.go(parseInt(d.getAttribute('data-dot')));self.hold()}});
+    this.startTimers();
+    setTimeout(function(){var t=$('#f11tip');if(t)t.style.opacity='0'},6000);
+  },
+  coPanel:function(){
+    var ranked=state.companies.map(function(c){
+      return {c:c,v:companyEarn(c.id),n:membersOf(c.id).length}}).sort(function(a,b){return b.v-a.v});
+    if(!ranked.length)return '<div class="empty">'+gic('building')+'<p>还没有公司数据</p></div>';
+    var max=ranked[0].v||1;
+    return ranked.map(function(r,i){
+      return '<div class="scr-co'+(i===0?' top':'')+'"><div class="no">'+String(i+1).padStart(2,'0')+'</div>'
+      +'<div><div class="cn">'+esc(r.c.name)+'<span class="mem">'+r.n+' 名成员</span></div>'
+      +'<div class="track"><div class="fill" style="width:'+Math.max(2,r.v/max*100)+'%"></div></div></div>'
+      +'<div class="cv num">'+money(r.v)+'</div></div>'}).join('');
+  },
+  persPanel:function(){
+    var ps=state.persons.filter(function(p){return p.kind==='player'&&p.active})
+      .map(function(p){return {p:p,v:personEarn(p.id)}})
+      .sort(function(a,b){return b.v-a.v}).slice(0,12);
+    if(!ps.length)return '<div class="empty">'+gic('people')+'<p>还没有学员数据</p></div>';
+    return ps.map(function(x,i){
+      var c=x.p.companyId?getCompany(x.p.companyId):null;
+      return '<div class="scr-pers"><div class="no">'+(i+1)+'</div>'
+      +'<div class="pn">'+esc(x.p.name)+'</div>'
+      +'<div class="pc">'+esc(c?c.name:'未分配')+' · '+POS_LABEL(x.p.position)+'</div>'
+      +'<div class="pv num">'+money(x.v)+'</div></div>'}).join('');
+  },
+  allPanel:function(){
+    if(!state.companies.length)return '<div class="empty"><p>还没有公司</p></div>';
+    var html='<div class="scr-all">'+state.companies.map(function(c){
+      var ms=membersOf(c);
+      return '<div class="mini"><div class="mh"><span>'+esc(c.name)+'</span>'
+      +'<b class="num">'+money(companyEarn(c.id))+'</b></div>'
+      +ms.map(function(p){return '<div class="ml"><span>'+esc(p.name)+' · '+POS_LABEL(p.position)+'</span>'
+      +'<span class="e num">'+money(personEarn(p.id))+'</span></div>'}).join('')+'</div>'}).join('');
+    var ua=unassigned();
+    if(ua.length)html+='<div class="mini"><div class="mh"><span>未分配公司</span></div>'
+      +ua.map(function(p){return '<div class="ml"><span>'+esc(p.name)+'</span>'
+      +'<span class="e num">'+money(personEarn(p.id))+'</span></div>'}).join('')+'</div>';
+    return html+'</div>';
+  },
+  finalPanel:function(){
+    var data=state.meta.settlement||[];
+    return '<div class="scr-final">'+data.map(function(d){
+      return '<div class="fc"><div class="fh"><span>'+esc(d.companyName)+'</span>'
+      +'<b class="num">'+money(d.total)+'</b></div>'
+      +d.rows.map(function(x){return '<div class="fl"><span>'+esc(x.name)+' · '+POS_LABEL(x.position)+'</span>'
+      +'<span class="a num">'+money(x.amount)+'</span></div>'}).join('')+'</div>'}).join('')+'</div>';
+  },
+  ticker:function(){
+    var items=state.records.filter(function(r){return r.status==='approved'}).slice(0,10)
+      .map(function(r){var p=getPerson(r.personId);
+        return '<span>第'+r.day+'天 · '+(p?p.name:'?')+' · '+esc(r.category)+' <b>'+money(r.amount)+'</b></span>'}).join('');
+    if(!items)items='<span>等待收益登记 · 数据经主办方审批后在此滚动播报</span>';
+    return '<div class="ticker">'+items+items+'</div>';
+  },
+  go:function(i){
+    this.tab=i;
+    $all('.scr-panel').forEach(function(p,k){p.classList.toggle('on',k===i)});
+    $all('[data-dot]').forEach(function(d,k){d.classList.toggle('on',k===i)});
+  },
+  next:function(){if(Date.now()>this.holdUntil)this.go((this.tab+1)%this.panels.length)},
+  hold:function(){this.holdUntil=Date.now()+20000},
+  stopTimers:function(){
+    clearInterval(this.autoTimer);clearInterval(this.clockTimer);clearInterval(this.syncTimer);
+    this.autoTimer=null;this.clockTimer=null;this.syncTimer=null;
+  },
+  startTimers:function(){
+    var self=this;
+    clearInterval(this.autoTimer);clearInterval(this.clockTimer);clearInterval(this.syncTimer);
+    this.autoTimer=setInterval(function(){self.next()},8000);
+    this.clockTimer=setInterval(function(){var d=new Date(),z=function(x){return (x<10?'0':'')+x};
+      var el=$('#scr-clock');if(el)el.textContent=z(d.getHours())+':'+z(d.getMinutes())},1000);
+    this.sig=JSON.stringify({r:state.records,m:state.meta});
+    this.syncTimer=setInterval(function(){
+      var fresh=load();if(!fresh)return;
+      var s=JSON.stringify({r:fresh.records,m:fresh.meta});
+      if(s!==self.sig){state=fresh;self.sig=s;self.render(true)}
+    },4000);
+  }
+};
+document.addEventListener('keydown',function(e){
+  if((location.hash||'').indexOf('#/screen')!==0)return;
+  if(e.key==='ArrowRight'){ScreenApp.go((ScreenApp.tab+1)%ScreenApp.panels.length);ScreenApp.hold()}
+  if(e.key==='ArrowLeft'){ScreenApp.go((ScreenApp.tab-1+ScreenApp.panels.length)%ScreenApp.panels.length);ScreenApp.hold()}
+});
+function afterSync(){
+  var h=location.hash||'#/';
+  if(h.indexOf('#/screen')===0)ScreenApp.render(true);
+  else render()
+}
+render();
+</script>
+<!-- VIEW_SCRIPTS -->
+</body>
+</html>
