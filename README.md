@@ -2,6 +2,8 @@
 
 ## 新增：商战 · X成长院（真实联网版）
 
+**正式网站：[商战 · X成长院](https://business-war-command-zhang.peppy-hare-3360.chatgpt.site)。手机浏览器直接打开即可。**
+
 完整联网源码位于 [`online/`](online/README.md)，包含服务器、数据库迁移、账号权限与手机界面。
 
 - 网站自己的账号和密码，无需 ChatGPT 账号。
