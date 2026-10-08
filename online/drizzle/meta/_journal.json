@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1791450951867,
+      "tag": "0000_overrated_captain_universe",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1791451330623,
+      "tag": "0001_supreme_lenny_balinger",
+      "breakpoints": true
+    }
+  ]
+}
