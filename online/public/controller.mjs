@@ -1,7 +1,7 @@
 import * as ui from './ui.mjs';
 import {positions} from './domain.mjs';
 const {esc,money,date,field,select,button}=ui,root=document.querySelector('#app');
-let session=null,data=null,page='home',companyId=null,selectedPerson='',dirty=false,dialog=null,noticeTimer,mode='ta';
+let session=null,data=null,page='home',screenReturn='home',companyId=null,selectedPerson='',dirty=false,dialog=null,noticeTimer;
 try{document.documentElement.dataset.theme=localStorage.getItem('shangzhan_theme_v1')==='dark'?'dark':'light';}catch{}
 function notify(message,error=false){const n=document.querySelector('#notice');n.textContent=message;n.className='show'+(error?' error':'');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>n.className='',error?7000:3500);}
 async function api(path,body){const response=await fetch(path,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined,cache:'no-store',credentials:'same-origin'});let result;try{result=await response.json();}catch{throw new Error('连接中断，请检查网络；输入尚未保存');}if(!response.ok)throw Object.assign(new Error(result.error||'操作未成功'),{status:response.status});return result;}
@@ -23,11 +23,13 @@ function render(keepScroll=false){
 function showCode(result){modal('助教邀请码',`<p>把网站链接和此邀请码单独发给助教，对方可自行设置账号和密码。一个邀请码只绑定一个账号，有效至 ${date(result.expiresAt)}。</p><div class="inline-code">${esc(result.code)}</div><p class="muted">只在此处显示一次，请复制保存，不要公开发到网上。</p>`,async()=>{});dialog.querySelector('[type=submit]').textContent='已保存，关闭';}
 function editPerson(p,cid=''){modal(p?'编辑学员':'新增学员',`<div class="fields">${field('学员姓名','name','text',p?.name||'','required maxlength="60"')}${select('公司','companyId',ui.companyOptions(),p?.company_id||cid)}${select('公司职位','position',Object.entries(positions),p?.position||'staff')}${p?select('学员状态','active',[['true','在册'],['false','停用（保留流水）']],p.active?'true':'false'):''}</div><p class="muted">修改公司或职位不会删除个人流水，公司汇总按当前成员变化。</p>`,async v=>act({action:p?'person_update':'person_create',id:p?.id,...v,active:v.active!=='false'}));}
 async function handle(action,value,b){
+ if(page==='rank'&&!['screen-close','fullscreen','refresh'].includes(action))return;
  switch(action){
   case 'account-create':modal('添加助教账号',`${field('显示姓名','name','text','','required maxlength="60"')}${field('登录账号','username','text','','required minlength="4" maxlength="32" pattern="[a-zA-Z0-9_]{4,32}" autocomplete="off"')}${field('初始密码（至少 10 位）','password','password','','required minlength="10" maxlength="128" autocomplete="new-password"')}<p class="muted">新账号为普通助教，没有账号管理权限。请单独告知本人，并让其登录后修改密码。</p>`,async v=>act({action:'account_create',role:'ta',...v}));break;
   case 'account-password':modal('重置助教密码',`${field('新密码（至少 10 位）','password','password','','required minlength="10" maxlength="128" autocomplete="new-password"')}<p class="muted">该助教在所有设备上的旧登录都会失效，请单独告知本人新密码。</p>`,async v=>act({action:'account_password',id:value,...v}));break;
   case 'enable-ta':await act({action:'account_enable',id:value});break;
-  case 'role-view':if(value==='screen'){page='rank';render();break;}if(value==='admin'&&data.me.role!=='admin'){notify('此账号是助教，主办方需要使用自己的账号登录',true);break;}if(dirty&&!confirm('有未提交的输入，确认切换？'))return;mode=value;ui.setMode(mode);page='home';render();break;
+  case 'screen-open':if(dirty&&!confirm('有未提交的输入，确认开启大屏？'))return;screenReturn=page;page='rank';closeDialog();render();break;
+  case 'screen-close':if(document.fullscreenElement)await document.exitFullscreen();page=screenReturn;render();break;
   case 'fullscreen':if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen();break;
   case 'go':if(dirty&&!confirm('本页输入尚未提交，确认离开？'))return;page=value;render();break;
   case 'student-panel':selectedPerson=value;page='student';render();break;
@@ -67,16 +69,17 @@ function login(){
  const wrapper=document.createElement('div');wrapper.className='login-shell';const content=root.firstElementChild;
  const mainTitle=content.querySelector('h1');mainTitle.textContent='商战';mainTitle.className='login-main-title';
  const subtitle=document.createElement('p');subtitle.className='school-subtitle';subtitle.textContent='X成长院';mainTitle.after(subtitle);
- const header=document.createElement('header');header.className='top';header.innerHTML=ui.brand()+ui.identityMenu(owner?'admin':mode);wrapper.append(header,content);root.replaceChildren(wrapper);
- if(!owner&&!registered&&!logged)content.querySelector('h2').textContent=mode==='admin'?'主办方登录':'助教登录';
+ const header=document.createElement('header');header.className='top';header.innerHTML=ui.brand()+ui.identityMenu(null);wrapper.append(header,content);root.replaceChildren(wrapper);
+ if(owner){content.querySelector('[name=username]').value='preview_admin';content.querySelector('[name=name]').value='主办方';}
+ if(!owner&&!registered&&!logged)content.querySelector('h2').textContent='账号登录';
  root.onclick=async e=>{const b=e.target.closest('[data-action]');if(!b)return;
-  if(b.dataset.action==='role-view'){if(b.dataset.value==='screen'){page='rank';notify('大屏显示活动数据，需要先登录');}else{mode=b.dataset.value;page='home';}loginMode='login';login();}
+  if(b.dataset.action==='login-focus'){content.querySelector('#auth-form input')?.focus();content.querySelector('#auth-form').scrollIntoView({block:'center',behavior:'smooth'});}
   if(b.dataset.action==='login-mode'){loginMode=b.dataset.value;login();}
   if(b.dataset.action==='auth-logout'){await api('/api/logout',{});await start();}
  };
  const form=document.querySelector('#auth-form');form.onsubmit=async e=>{e.preventDefault();const b=form.querySelector('button');b.disabled=true;try{await api(logged?'/api/join':registered?'/api/register':'/api/login',{...Object.fromEntries(new FormData(form)),owner:owner===true});dirty=false;await start();}catch(err){form.querySelector('[data-error]').textContent=err.message;b.disabled=false;}};
 }
-async function start(){try{session=await api('/api/session');if(!session.user){data=null;login();return;}mode=session.user.role==='admin'?'admin':'ta';ui.setMode(mode);await loadData();}catch(error){root.innerHTML=`<main class="login"><section class="card"><h1>暂时无法连接活动</h1><p>${esc(error.message)}</p><button id="retry">重新连接</button><p class="muted section">不会因此初始化或创建新活动。</p>${button('退出账号','auth-logout')}</section></main>`;document.querySelector('#retry').onclick=start;root.onclick=async e=>{if(e.target.closest('[data-action=auth-logout]')){await api('/api/logout',{});await start();}};}}
+async function start(){try{session=await api('/api/session');if(!session.user){data=null;ui.setData(null);page='home';login();return;}await loadData();}catch(error){root.innerHTML=`<main class="login"><section class="card"><h1>暂时无法连接活动</h1><p>${esc(error.message)}</p><button id="retry">重新连接</button><p class="muted section">不会因此初始化或创建新活动。</p>${button('退出账号','auth-logout')}</section></main>`;document.querySelector('#retry').onclick=start;root.onclick=async e=>{if(e.target.closest('[data-action=auth-logout]')){await api('/api/logout',{});await start();}};}}
 window.addEventListener('beforeunload',e=>{if(dirty||dialog){e.preventDefault();e.returnValue='';}});
 async function refreshQuietly(){if(!data?.event||dirty||dialog||document.hidden)return;try{const next=await api('/api/state');if(next.event?.id!==data.event.id||next.event?.revision!==data.event.revision){data=next;ui.setData(data);render(true);}}catch(error){notify('同步暂停：'+error.message,true);}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshQuietly();});setInterval(refreshQuietly,15000);await start();

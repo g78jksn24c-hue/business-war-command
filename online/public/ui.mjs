@@ -3,10 +3,13 @@ export const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 export const money=c=>((c||0)/100).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
 export const date=s=>s?new Date(s).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
 export const status={pending:'待审批',approved:'已通过',rejected:'未通过'};
-let d,mode='ta';export const setData=value=>d=value;export const setMode=value=>mode=value;
-export const admin=()=>d?.me?.role==='admin'&&mode!=='ta',staff=()=>['admin','ta'].includes(d?.me?.role);
+let d;export const setData=value=>d=value;
+export const admin=()=>d?.me?.role==='admin',staff=()=>['admin','ta'].includes(d?.me?.role);
 export const brand=()=>'<div class="brand"><span class="mark">商</span><div><strong>商战</strong><small>X成长院</small></div></div>';
-export function identityMenu(selected=mode){return`<div class="identity-menu" aria-label="身份入口">${button('助教','role-view','ta',selected==='ta'?'active':'')}${button('主办方','role-view','admin',selected==='admin'?'active':'')}${button('大屏','role-view','screen',selected==='screen'?'active':'')}</div>`;}
+export function identityMenu(identity=d?.me){
+ if(!identity)return`<div class="identity-menu">${button('账号登录','login-focus','','primary')}</div>`;
+ return`<details class="account-menu"><summary aria-label="账号菜单：${esc(identity.name)}，${roles[identity.role]}"><span class="account-avatar">${identity.role==='admin'?'主':'助'}</span><span><strong>${esc(identity.name)}</strong><small>${roles[identity.role]}</small></span><span aria-hidden="true">⌄</span></summary><div class="account-popover"><p>身份由登录账号识别</p>${button('开启只读大屏','screen-open')}${button('我的账号与设置','go','settings')}${button('退出登录','logout','','danger')}</div></details>`;
+}
 export const person=id=>d.persons.find(p=>p.id===id),company=id=>d.companies.find(c=>c.id===id);
 export const members=cid=>d.persons.filter(p=>p.active&&p.company_id===cid),balance=cid=>members(cid).reduce((n,p)=>n+p.balance,0);
 export const empty=message=>`<div class="empty">${esc(message)}</div>`;
@@ -59,6 +62,7 @@ export function shell(page,cid,selectedPerson){
  const nav=[['home','主页'],['entry','收益登记'],['people','学员登记'],['settings','设置']];
  const views={home,companies:()=>companies(cid),people,student:()=>studentPanel(selectedPerson),entry:()=>entry(selectedPerson),review,records,rank:ranking,settle,settings};
  if(!views[page]||(page==='review'||page==='settle'&&!d.event.settled)&&!admin())page='home';
+ if(page==='rank')return`<div class="shell screen-shell"><header class="top">${brand()}<div class="top-right"><span class="badge">只读大屏 · 第 ${d.event.day} / 7 天</span><div class="actions">${button('刷新','refresh')}${button('全屏显示','fullscreen')}${button('退出大屏','screen-close')}</div></div></header><main><div class="screen-event"><h1>${esc(d.event.name)}</h1><p>已通过收支 · 公司资金为成员余额总和</p></div>${days()}${ranking()}<p class="sync section">只读展示 · 自动同步 · ${date(d.serverTime)}</p></main></div>`;
  const active=page==='student'?'people':['companies','records','review','settle','rank'].includes(page)?'home':page;
- return`<div class="shell"><header class="top">${brand()}<div class="top-right">${identityMenu(page==='rank'?'screen':mode)}<div class="actions account-line"><span class="muted">${esc(d.me.name)} · ${roles[d.me.role]}</span>${button('刷新','refresh')}<span class="badge">第 ${d.event.day} / 7 天</span>${page==='rank'?button('全屏','fullscreen'):''}</div></div></header><div class="layout"><main>${views[page]()}<p class="sync section">已连接服务器 · ${date(d.serverTime)} · 数据不会因再次登录而重置</p></main></div><nav class="nav" aria-label="底部主导航">${nav.map(([p,l])=>button(l,'go',p,active===p?'active':'')).join('')}</nav></div>`;
+ return`<div class="shell"><header class="top">${brand()}<div class="top-right">${identityMenu()}<div class="actions account-line">${button('刷新','refresh')}<span class="badge">第 ${d.event.day} / 7 天</span></div></div></header><div class="layout"><main>${views[page]()}<p class="sync section">已连接服务器 · ${date(d.serverTime)} · 数据不会因再次登录而重置</p></main></div><nav class="nav" aria-label="底部主导航">${nav.map(([p,l])=>button(l,'go',p,active===p?'active':'')).join('')}</nav></div>`;
 }
